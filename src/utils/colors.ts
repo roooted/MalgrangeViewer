@@ -6,3 +6,6 @@
   '#7CC7D8',
   '#C4A6FF',
 ];
+
+export const EDGE_BASE_COLOR = '#61708F';
+export const EDGE_STROKE_WIDTH = 2.2;

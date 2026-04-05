@@ -1,5 +1,13 @@
-﻿import type { GraphState, HistoryState, Vertex, VertexCountControlState } from './types';
-import { createVertexId, createZeroMatrix } from '../utils/matrixMapping';
+﻿import type { Edge, GraphState, HistoryAction, HistoryState, Vertex, VertexCountControlState } from './types';
+import {
+  createEdgeFromIndexes,
+  createMatrixFromEdges,
+  createVertexId,
+  createZeroMatrix,
+  findEdgeByIndexes,
+  removeEdgeByIndexes,
+  toggleMatrixValue,
+} from '../utils/matrixMapping';
 
 export const MIN_VERTEX_COUNT = 2;
 export const MAX_VERTEX_COUNT = 20;
@@ -40,9 +48,53 @@ export const createEmptyGraphState = (vertexCount = DEFAULT_VERTEX_COUNT): Graph
   };
 };
 
-// При реконструкции на первом этапе полностью сбрасываем граф и служебные состояния.
+// При реконструкции полностью пересобираем изолированные вершины, пустые дуги и пустую историю.
 export const reconstructGraphState = (vertexCount: number): GraphState =>
   createEmptyGraphState(vertexCount);
+
+const appendHistoryAction = (history: HistoryState, action: HistoryAction): HistoryState => ({
+  past: [...history.past, action],
+  future: [],
+});
+
+export const applyMatrixToggle = (
+  graphState: GraphState,
+  rowIndex: number,
+  columnIndex: number,
+): GraphState => {
+  const nextMatrix = toggleMatrixValue(graphState.matrix, rowIndex, columnIndex);
+  const nextValue = ((nextMatrix[rowIndex]?.[columnIndex] ?? 0) === 1 ? 1 : 0) as 0 | 1;
+  const currentEdge = findEdgeByIndexes(graphState.edges, graphState.vertices, rowIndex, columnIndex);
+
+  let nextEdges: Edge[];
+
+  if (nextValue === 1) {
+    nextEdges = currentEdge
+      ? graphState.edges
+      : [...graphState.edges, createEdgeFromIndexes(graphState.vertices, rowIndex, columnIndex)];
+  } else {
+    nextEdges = removeEdgeByIndexes(graphState.edges, graphState.vertices, rowIndex, columnIndex);
+  }
+
+  return {
+    ...graphState,
+    edges: nextEdges,
+    matrix: createMatrixFromEdges(graphState.vertexCount, nextEdges),
+    componentResults: [],
+    history: appendHistoryAction(graphState.history, {
+      type: 'toggle-matrix',
+      rowIndex,
+      columnIndex,
+      nextValue,
+      edge: currentEdge ?? undefined,
+    }),
+  };
+};
+
+export const rebuildMatrixFromEdges = (graphState: GraphState): GraphState => ({
+  ...graphState,
+  matrix: createMatrixFromEdges(graphState.vertexCount, graphState.edges),
+});
 
 export const createInitialVertexCountControlState = (): VertexCountControlState => ({
   draftValue: String(DEFAULT_VERTEX_COUNT),

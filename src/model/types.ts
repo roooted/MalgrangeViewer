@@ -26,6 +26,9 @@ export interface ComponentResult {
 export interface HistoryAction {
   type: HistoryActionType;
   edge?: Edge;
+  rowIndex?: number;
+  columnIndex?: number;
+  nextValue?: 0 | 1;
   fromVertexCount?: number;
   toVertexCount?: number;
 }

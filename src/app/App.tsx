@@ -20,8 +20,8 @@ function App() {
           <span className="brand__eyebrow">Directed Graph Workspace</span>
           <h1 className="brand__title">Malgrange Graph Visualizer</h1>
           <p className="brand__description">
-            Stage one scaffold with isolated vertices, adjacency matrix shell, and a dark
-            wireframe-style workspace.
+            Edit the graph through the adjacency matrix. Algorithm and mouse edge editing are kept
+            for the next stages.
           </p>
         </div>
 
@@ -32,7 +32,7 @@ function App() {
           canUndo={undoRedo.canUndo}
           canRedo={undoRedo.canRedo}
           onVertexCountChange={editor.setVertexCountDraft}
-          onVertexCountCommit={editor.commitVertexCountDraft}
+          onApplyVertexCount={editor.openVertexCountConfirmation}
           onUndo={undoRedo.undo}
           onRedo={undoRedo.redo}
         />
@@ -44,7 +44,8 @@ function App() {
             <span className="panel__eyebrow">Graph</span>
             <h2 className="panel__title">Directed graph canvas</h2>
             <p className="panel__description">
-              Vertices are reconstructed on a circle. Edge editing starts in the next stage.
+              Vertices are reconstructed on a circle, and matrix toggles immediately update visible
+              directed edges.
             </p>
           </div>
 
@@ -59,13 +60,14 @@ function App() {
               <span className="panel__eyebrow">Matrix</span>
               <h2 className="panel__title">Adjacency matrix</h2>
               <p className="panel__description">
-                The matrix shape already follows the current vertex count.
+                Click any cell to toggle a directed edge. Diagonal cells control loops.
               </p>
             </div>
 
             <AdjacencyMatrix
               vertices={editor.graphState.vertices}
               matrix={editor.graphState.matrix}
+              onToggleCell={editor.toggleMatrixCell}
             />
           </section>
 

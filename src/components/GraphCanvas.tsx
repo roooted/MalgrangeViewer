@@ -1,13 +1,15 @@
 ﻿import {
   Background,
   BackgroundVariant,
-  MarkerType,
   ReactFlow,
   type Edge as FlowEdge,
+  type EdgeTypes,
   type Node,
 } from '@xyflow/react';
 import { useMemo } from 'react';
 import type { Edge, Vertex } from '../model/types';
+import { LoopEdge } from './LoopEdge';
+import { StraightCenterEdge } from './StraightCenterEdge';
 import { createCircleLayout } from '../utils/circleLayout';
 
 type GraphCanvasProps = {
@@ -15,10 +17,28 @@ type GraphCanvasProps = {
   edges: Edge[];
 };
 
+type EdgeRenderData = {
+  sourceCenter: {
+    x: number;
+    y: number;
+  };
+  targetCenter: {
+    x: number;
+    y: number;
+  };
+};
+
+const edgeTypes: EdgeTypes = {
+  straightCenter: StraightCenterEdge,
+  loop: LoopEdge,
+};
+
 export function GraphCanvas({ vertices, edges }: GraphCanvasProps) {
+  const layoutItems = useMemo(() => createCircleLayout(vertices), [vertices]);
+
   const nodes = useMemo<Node[]>(
     () =>
-      createCircleLayout(vertices).map(({ id, label, position }) => ({
+      layoutItems.map(({ id, label, position }) => ({
         id,
         type: 'default',
         className: 'graph-node',
@@ -27,36 +47,54 @@ export function GraphCanvas({ vertices, edges }: GraphCanvasProps) {
         draggable: false,
         selectable: false,
       })),
-    [vertices],
+    [layoutItems],
   );
 
-  const flowEdges = useMemo<FlowEdge[]>(
-    () =>
-      edges.map((edge) => ({
+  const flowEdges = useMemo(() => {
+    const centersById = new Map(
+      layoutItems.map((item) => [
+        item.id,
+        {
+          x: item.position.x,
+          y: item.position.y,
+        },
+      ]),
+    );
+    const result: FlowEdge[] = [];
+
+    edges.forEach((edge) => {
+      const sourceCenter = centersById.get(edge.source);
+      const targetCenter = centersById.get(edge.target);
+
+      if (!sourceCenter || !targetCenter) {
+        return;
+      }
+
+      result.push({
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 18,
-          height: 18,
-          color: '#8ea2ff',
-        },
-        style: {
-          stroke: '#8ea2ff',
-          strokeWidth: 2,
-        },
+        type: edge.source === edge.target ? 'loop' : 'straightCenter',
+        data: {
+          sourceCenter,
+          targetCenter,
+        } satisfies EdgeRenderData,
         selectable: false,
-      })),
-    [edges],
-  );
+        focusable: false,
+      });
+    });
+
+    return result;
+  }, [edges, layoutItems]);
 
   return (
     <div className="graph-canvas">
       <ReactFlow
+        nodeOrigin={[0.5, 0.5]}
         fitView
         nodes={nodes}
         edges={flowEdges}
+        edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}

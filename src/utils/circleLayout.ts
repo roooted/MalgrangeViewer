@@ -11,9 +11,11 @@ type CircleLayoutItem = {
   position: Position;
 };
 
-const LAYOUT_CENTER_X = 360;
-const LAYOUT_CENTER_Y = 260;
-const LAYOUT_RADIUS = 190;
+export const GRAPH_CENTER_X = 360;
+export const GRAPH_CENTER_Y = 260;
+export const GRAPH_LAYOUT_RADIUS = 190;
+export const GRAPH_NODE_DIAMETER = 48;
+export const GRAPH_NODE_RADIUS = GRAPH_NODE_DIAMETER / 2;
 
 // Равномерно раскладываем вершины по окружности, чтобы каркас сразу соответствовал ТЗ.
 export const createCircleLayout = (vertices: Vertex[]): CircleLayoutItem[] =>
@@ -24,8 +26,8 @@ export const createCircleLayout = (vertices: Vertex[]): CircleLayoutItem[] =>
       id: vertex.id,
       label: vertex.label,
       position: {
-        x: LAYOUT_CENTER_X + LAYOUT_RADIUS * Math.cos(angle),
-        y: LAYOUT_CENTER_Y + LAYOUT_RADIUS * Math.sin(angle),
+        x: GRAPH_CENTER_X + GRAPH_LAYOUT_RADIUS * Math.cos(angle),
+        y: GRAPH_CENTER_Y + GRAPH_LAYOUT_RADIUS * Math.sin(angle),
       },
     };
   });

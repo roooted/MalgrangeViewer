@@ -317,6 +317,17 @@ p {
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.95rem;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.matrix__cell--diagonal {
+  background: rgba(9, 18, 31, 0.92);
+}
+
+.matrix__cell--active {
+  background: rgba(103, 133, 245, 0.42);
+  border-color: rgba(166, 189, 255, 0.68);
+  color: #f2f6ff;
 }
 
 .matrix__cell:disabled {
@@ -492,3 +503,9 @@ p {
     flex-direction: column-reverse;
   }
 }
+
+.react-flow__edge path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+

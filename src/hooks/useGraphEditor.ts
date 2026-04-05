@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import {
+  applyMatrixToggle,
   clampVertexCount,
   createEmptyGraphState,
   createInitialVertexCountControlState,
@@ -11,9 +12,10 @@ type GraphEditorApi = {
   graphState: GraphState;
   vertexCountControl: VertexCountControlState;
   setVertexCountDraft: (value: string) => void;
-  commitVertexCountDraft: () => void;
+  openVertexCountConfirmation: () => void;
   confirmVertexCountReconstruction: () => void;
   cancelVertexCountReconstruction: () => void;
+  toggleMatrixCell: (rowIndex: number, columnIndex: number) => void;
 };
 
 export function useGraphEditor(): GraphEditorApi {
@@ -29,10 +31,10 @@ export function useGraphEditor(): GraphEditorApi {
     }));
   };
 
-  const commitVertexCountDraft = () => {
+  const openVertexCountConfirmation = () => {
     const parsedValue = Number.parseInt(vertexCountControl.draftValue, 10);
 
-    // Пустое или некорректное значение возвращаем к текущему размеру графа.
+    // Пустое или некорректное значение возвращаем к текущему размеру графа без перестройки.
     if (Number.isNaN(parsedValue)) {
       setVertexCountControl((currentState) => ({
         ...currentState,
@@ -68,7 +70,6 @@ export function useGraphEditor(): GraphEditorApi {
       return;
     }
 
-    // Подтверждение на первом этапе пересоздаёт только изолированные вершины и пустую матрицу.
     setGraphState(reconstructGraphState(vertexCountControl.pendingValue));
     setVertexCountControl({
       draftValue: String(vertexCountControl.pendingValue),
@@ -85,12 +86,18 @@ export function useGraphEditor(): GraphEditorApi {
     });
   };
 
+  const toggleMatrixCell = (rowIndex: number, columnIndex: number) => {
+    // Все изменения матрицы проходят через graph state layer, который сразу пересобирает список дуг.
+    setGraphState((currentState) => applyMatrixToggle(currentState, rowIndex, columnIndex));
+  };
+
   return {
     graphState,
     vertexCountControl,
     setVertexCountDraft,
-    commitVertexCountDraft,
+    openVertexCountConfirmation,
     confirmVertexCountReconstruction,
     cancelVertexCountReconstruction,
+    toggleMatrixCell,
   };
 }

@@ -7,10 +7,10 @@ type UndoRedoApi = {
   redo: () => void;
 };
 
-export function useUndoRedo(history: HistoryState): UndoRedoApi {
+export function useUndoRedo(_history: HistoryState): UndoRedoApi {
   return {
-    canUndo: history.past.length > 0,
-    canRedo: history.future.length > 0,
+    canUndo: false,
+    canRedo: false,
     undo: () => undefined,
     redo: () => undefined,
   };

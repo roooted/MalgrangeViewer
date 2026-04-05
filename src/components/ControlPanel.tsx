@@ -7,7 +7,7 @@ type ControlPanelProps = {
   canUndo: boolean;
   canRedo: boolean;
   onVertexCountChange: (value: string) => void;
-  onVertexCountCommit: () => void;
+  onApplyVertexCount: () => void;
   onUndo: () => void;
   onRedo: () => void;
 };
@@ -19,13 +19,13 @@ export function ControlPanel({
   canUndo,
   canRedo,
   onVertexCountChange,
-  onVertexCountCommit,
+  onApplyVertexCount,
   onUndo,
   onRedo,
 }: ControlPanelProps) {
   const handleVertexCountKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      onVertexCountCommit();
+      onApplyVertexCount();
     }
   };
 
@@ -41,10 +41,12 @@ export function ControlPanel({
             max={maxVertexCount}
             value={vertexCountValue}
             onChange={(event) => onVertexCountChange(event.target.value)}
-            onBlur={onVertexCountCommit}
             onKeyDown={handleVertexCountKeyDown}
           />
         </label>
+        <button className="button" type="button" onClick={onApplyVertexCount}>
+          Apply
+        </button>
       </div>
 
       <div className="control-panel__group">

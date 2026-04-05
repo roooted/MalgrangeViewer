@@ -3,9 +3,10 @@
 type AdjacencyMatrixProps = {
   vertices: Vertex[];
   matrix: MatrixData;
+  onToggleCell: (rowIndex: number, columnIndex: number) => void;
 };
 
-export function AdjacencyMatrix({ vertices, matrix }: AdjacencyMatrixProps) {
+export function AdjacencyMatrix({ vertices, matrix, onToggleCell }: AdjacencyMatrixProps) {
   return (
     <div className="matrix">
       <div className="matrix__scroll">
@@ -30,7 +31,12 @@ export function AdjacencyMatrix({ vertices, matrix }: AdjacencyMatrixProps) {
 
                 {row.map((value, columnIndex) => (
                   <td key={`${rowIndex}-${columnIndex}`}>
-                    <button className="matrix__cell" type="button" disabled>
+                    <button
+                      aria-label={`Toggle edge ${vertices[rowIndex]?.label} to ${vertices[columnIndex]?.label}`}
+                      className={`matrix__cell${rowIndex === columnIndex ? ' matrix__cell--diagonal' : ''}${value === 1 ? ' matrix__cell--active' : ''}`}
+                      type="button"
+                      onClick={() => onToggleCell(rowIndex, columnIndex)}
+                    >
                       {value}
                     </button>
                   </td>
