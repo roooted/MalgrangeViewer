@@ -1,4 +1,5 @@
-﻿import { AdjacencyMatrix } from '../components/AdjacencyMatrix';
+﻿import { useEffect, type CSSProperties } from 'react';
+import { AdjacencyMatrix } from '../components/AdjacencyMatrix';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ControlPanel } from '../components/ControlPanel';
 import { GraphCanvas } from '../components/GraphCanvas';
@@ -7,21 +8,59 @@ import { useGraphEditor } from '../hooks/useGraphEditor';
 import { useMalgrange } from '../hooks/useMalgrange';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { MAX_VERTEX_COUNT, MIN_VERTEX_COUNT } from '../model/graphState';
+import { MATRIX_CELL_SIZE_PX } from '../utils/uiConstants';
+
+type AppCssVariables = CSSProperties & {
+  '--matrix-cell-size': string;
+};
 
 function App() {
   const editor = useGraphEditor();
   const undoRedo = useUndoRedo(editor.graphState.history);
   const malgrange = useMalgrange(editor.graphState);
+  const appStyle: AppCssVariables = {
+    '--matrix-cell-size': `${MATRIX_CELL_SIZE_PX}px`,
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (editor.vertexCountControl.isConfirmOpen) {
+        return;
+      }
+
+      if (event.key === 'Escape' && editor.graphState.pendingEdgeSourceId !== null) {
+        event.preventDefault();
+        editor.cancelPendingEdgeCreation();
+      }
+
+      if (event.key === 'Delete' && editor.graphState.selectedEdgeId !== null) {
+        event.preventDefault();
+        editor.deleteSelectedGraphEdge();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    editor.cancelPendingEdgeCreation,
+    editor.deleteSelectedGraphEdge,
+    editor.graphState.pendingEdgeSourceId,
+    editor.graphState.selectedEdgeId,
+    editor.vertexCountControl.isConfirmOpen,
+  ]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={appStyle}>
       <header className="panel app-toolbar">
         <div className="brand">
           <span className="brand__eyebrow">Directed Graph Workspace</span>
           <h1 className="brand__title">Malgrange Graph Visualizer</h1>
           <p className="brand__description">
-            Edit the graph through the adjacency matrix. Algorithm and mouse edge editing are kept
-            for the next stages.
+            Edit directed edges on the graph and through the adjacency matrix. SCC calculation is
+            prepared and will be enabled in the next stage.
           </p>
         </div>
 
@@ -44,13 +83,26 @@ function App() {
             <span className="panel__eyebrow">Graph</span>
             <h2 className="panel__title">Directed graph canvas</h2>
             <p className="panel__description">
-              Vertices are reconstructed on a circle, and matrix toggles immediately update visible
-              directed edges.
+              Click a vertex to start edge creation. Press Esc to cancel, or select an edge and
+              press Delete to remove it.
             </p>
           </div>
 
           <div className="workspace__graph-body">
-            <GraphCanvas vertices={editor.graphState.vertices} edges={editor.graphState.edges} />
+            <GraphCanvas
+              vertices={editor.graphState.vertices}
+              edges={editor.graphState.edges}
+              hoveredVertexId={editor.graphState.hoveredVertexId}
+              pendingEdgeSourceId={editor.graphState.pendingEdgeSourceId}
+              pendingEdgeTarget={editor.graphState.pendingEdgeTarget}
+              hoveredEdgeId={editor.graphState.hoveredEdgeId}
+              selectedEdgeId={editor.graphState.selectedEdgeId}
+              onNodeClick={editor.handleNodeClick}
+              onNodeHover={editor.handleNodeHover}
+              onEdgeHover={editor.handleEdgeHover}
+              onEdgeSelect={editor.handleEdgeSelect}
+              onPointerMove={editor.handleCanvasPointerMove}
+            />
           </div>
         </section>
 
@@ -67,6 +119,8 @@ function App() {
             <AdjacencyMatrix
               vertices={editor.graphState.vertices}
               matrix={editor.graphState.matrix}
+              hoveredCell={editor.hoveredMatrixCell}
+              selectedCell={editor.selectedMatrixCell}
               onToggleCell={editor.toggleMatrixCell}
             />
           </section>

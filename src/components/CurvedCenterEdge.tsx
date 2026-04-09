@@ -1,28 +1,26 @@
 ﻿import { BaseEdge, type EdgeProps } from '@xyflow/react';
-import {
-  getStraightEdgeGeometry,
-  getTemporaryStraightEdgeGeometry,
-} from '../utils/edgeGeometry';
-import type { EdgeRenderData } from './edgeRenderTypes';
+import { getCurvedEdgeGeometry } from '../utils/edgeGeometry';
+import type { CurvedEdgeRenderData } from './edgeRenderTypes';
 import { getEdgeVariantStyle } from './edgeStyles';
 
-export function StraightCenterEdge({ data }: EdgeProps) {
-  const edgeData = data as EdgeRenderData | undefined;
+export function CurvedCenterEdge({ data }: EdgeProps) {
+  const edgeData = data as CurvedEdgeRenderData | undefined;
 
   if (!edgeData) {
     return null;
   }
 
   const style = getEdgeVariantStyle(edgeData.variant);
-  const geometry =
-    edgeData.variant === 'temporary'
-      ? getTemporaryStraightEdgeGeometry(edgeData.sourceCenter, edgeData.targetCenter)
-      : getStraightEdgeGeometry(edgeData.sourceCenter, edgeData.targetCenter);
+  const geometry = getCurvedEdgeGeometry(
+    edgeData.sourceCenter,
+    edgeData.targetCenter,
+    edgeData.bendDirection,
+  );
 
   return (
     <g style={{ pointerEvents: style.pointerEvents, opacity: style.opacity }}>
       <BaseEdge
-        path={geometry.linePath}
+        path={geometry.curvePath}
         style={{
           stroke: style.color,
           strokeWidth: style.strokeWidth,
@@ -34,7 +32,7 @@ export function StraightCenterEdge({ data }: EdgeProps) {
       />
       {style.isInteractive ? (
         <path
-          d={geometry.linePath}
+          d={geometry.curvePath}
           fill="none"
           stroke="transparent"
           strokeWidth={style.hitboxWidth}

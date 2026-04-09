@@ -1,9 +1,20 @@
 ﻿import type { AdjacencyMatrix, Edge, EdgeId, Vertex, VertexId } from '../model/types';
 
+export type MatrixCellPosition = {
+  rowIndex: number;
+  columnIndex: number;
+};
+
 export const createVertexId = (index: number): VertexId => `x${index + 1}` as VertexId;
 
 export const createEdgeId = (source: VertexId, target: VertexId): EdgeId =>
   `${source}->${target}` as EdgeId;
+
+export const createEdge = (source: VertexId, target: VertexId): Edge => ({
+  id: createEdgeId(source, target),
+  source,
+  target,
+});
 
 export const createZeroMatrix = (vertexCount: number): AdjacencyMatrix =>
   Array.from({ length: vertexCount }, () => Array.from({ length: vertexCount }, () => 0));
@@ -46,12 +57,14 @@ export const createEdgeFromIndexes = (
   const source = vertices[rowIndex].id;
   const target = vertices[columnIndex].id;
 
-  return {
-    id: createEdgeId(source, target),
-    source,
-    target,
-  };
+  return createEdge(source, target);
 };
+
+export const findEdgeById = (edges: Edge[], edgeId: EdgeId): Edge | null =>
+  edges.find((edge) => edge.id === edgeId) ?? null;
+
+export const hasEdgeId = (edges: Edge[], edgeId: EdgeId): boolean =>
+  edges.some((edge) => edge.id === edgeId);
 
 export const findEdgeByIndexes = (
   edges: Edge[],
@@ -68,8 +81,11 @@ export const findEdgeByIndexes = (
 
   const edgeId = createEdgeId(source, target);
 
-  return edges.find((edge) => edge.id === edgeId) ?? null;
+  return findEdgeById(edges, edgeId);
 };
+
+export const removeEdgeById = (edges: Edge[], edgeId: EdgeId): Edge[] =>
+  edges.filter((edge) => edge.id !== edgeId);
 
 export const removeEdgeByIndexes = (
   edges: Edge[],
@@ -86,5 +102,28 @@ export const removeEdgeByIndexes = (
 
   const edgeId = createEdgeId(source, target);
 
-  return edges.filter((edge) => edge.id !== edgeId);
+  return removeEdgeById(edges, edgeId);
 };
+
+export const getMatrixPositionByEdgeId = (
+  edgeId: EdgeId | null,
+  vertices: Vertex[],
+): MatrixCellPosition | null => {
+  if (!edgeId) {
+    return null;
+  }
+
+  const [sourceId, targetId] = edgeId.split('->') as [VertexId, VertexId];
+  const rowIndex = vertices.findIndex((vertex) => vertex.id === sourceId);
+  const columnIndex = vertices.findIndex((vertex) => vertex.id === targetId);
+
+  if (rowIndex < 0 || columnIndex < 0) {
+    return null;
+  }
+
+  return {
+    rowIndex,
+    columnIndex,
+  };
+};
+

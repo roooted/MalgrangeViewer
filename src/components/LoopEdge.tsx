@@ -1,10 +1,7 @@
 ﻿import { BaseEdge, type EdgeProps } from '@xyflow/react';
-import { EDGE_BASE_COLOR, EDGE_STROKE_WIDTH } from '../utils/colors';
-import { getLoopEdgeGeometry, type EdgeRenderPosition } from '../utils/edgeGeometry';
-
-type EdgeRenderData = {
-  sourceCenter: EdgeRenderPosition;
-};
+import { getLoopEdgeGeometry } from '../utils/edgeGeometry';
+import type { EdgeRenderData } from './edgeRenderTypes';
+import { getEdgeVariantStyle } from './edgeStyles';
 
 export function LoopEdge({ data }: EdgeProps) {
   const edgeData = data as EdgeRenderData | undefined;
@@ -13,20 +10,34 @@ export function LoopEdge({ data }: EdgeProps) {
     return null;
   }
 
+  const style = getEdgeVariantStyle(edgeData.variant);
   const geometry = getLoopEdgeGeometry(edgeData.sourceCenter);
 
   return (
-    <g>
+    <g style={{ pointerEvents: style.pointerEvents, opacity: style.opacity }}>
       <BaseEdge
         path={geometry.loopPath}
         style={{
-          stroke: EDGE_BASE_COLOR,
-          strokeWidth: EDGE_STROKE_WIDTH,
+          stroke: style.color,
+          strokeWidth: style.strokeWidth,
           strokeLinecap: 'round',
           strokeLinejoin: 'round',
+          strokeDasharray: style.dasharray,
+          pointerEvents: 'none',
         }}
       />
-      <path d={geometry.arrowPath} fill={EDGE_BASE_COLOR} />
+      {style.isInteractive ? (
+        <path
+          d={geometry.loopPath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={style.hitboxWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'stroke' }}
+        />
+      ) : null}
+      <path d={geometry.arrowPath} fill={style.color} style={{ pointerEvents: 'none' }} />
     </g>
   );
 }

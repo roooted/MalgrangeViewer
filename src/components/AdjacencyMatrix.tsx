@@ -1,12 +1,21 @@
 ﻿import type { AdjacencyMatrix as MatrixData, Vertex } from '../model/types';
+import type { MatrixCellPosition } from '../utils/matrixMapping';
 
 type AdjacencyMatrixProps = {
   vertices: Vertex[];
   matrix: MatrixData;
+  hoveredCell: MatrixCellPosition | null;
+  selectedCell: MatrixCellPosition | null;
   onToggleCell: (rowIndex: number, columnIndex: number) => void;
 };
 
-export function AdjacencyMatrix({ vertices, matrix, onToggleCell }: AdjacencyMatrixProps) {
+export function AdjacencyMatrix({
+  vertices,
+  matrix,
+  hoveredCell,
+  selectedCell,
+  onToggleCell,
+}: AdjacencyMatrixProps) {
   return (
     <div className="matrix">
       <div className="matrix__scroll">
@@ -29,18 +38,27 @@ export function AdjacencyMatrix({ vertices, matrix, onToggleCell }: AdjacencyMat
                   {vertices[rowIndex]?.label}
                 </th>
 
-                {row.map((value, columnIndex) => (
-                  <td key={`${rowIndex}-${columnIndex}`}>
-                    <button
-                      aria-label={`Toggle edge ${vertices[rowIndex]?.label} to ${vertices[columnIndex]?.label}`}
-                      className={`matrix__cell${rowIndex === columnIndex ? ' matrix__cell--diagonal' : ''}${value === 1 ? ' matrix__cell--active' : ''}`}
-                      type="button"
-                      onClick={() => onToggleCell(rowIndex, columnIndex)}
-                    >
-                      {value}
-                    </button>
-                  </td>
-                ))}
+                {row.map((value, columnIndex) => {
+                  const isDiagonal = rowIndex === columnIndex;
+                  const isActive = value === 1;
+                  const isHovered =
+                    hoveredCell?.rowIndex === rowIndex && hoveredCell?.columnIndex === columnIndex;
+                  const isSelected =
+                    selectedCell?.rowIndex === rowIndex && selectedCell?.columnIndex === columnIndex;
+
+                  return (
+                    <td key={`${rowIndex}-${columnIndex}`}>
+                      <button
+                        aria-label={`Toggle edge ${vertices[rowIndex]?.label} to ${vertices[columnIndex]?.label}`}
+                        className={`matrix__cell${isDiagonal ? ' matrix__cell--diagonal' : ''}${isActive ? ' matrix__cell--active' : ''}${isHovered ? ' matrix__cell--hovered' : ''}${isSelected ? ' matrix__cell--selected' : ''}`}
+                        type="button"
+                        onClick={() => onToggleCell(rowIndex, columnIndex)}
+                      >
+                        {value}
+                      </button>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -49,3 +67,4 @@ export function AdjacencyMatrix({ vertices, matrix, onToggleCell }: AdjacencyMat
     </div>
   );
 }
+

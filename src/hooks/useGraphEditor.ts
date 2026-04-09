@@ -1,21 +1,45 @@
-﻿import { useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import {
   applyMatrixToggle,
+  cancelEdgeCreation,
   clampVertexCount,
   createEmptyGraphState,
   createInitialVertexCountControlState,
+  deleteSelectedEdge,
+  finalizeEdgeCreation,
   reconstructGraphState,
+  selectEdge,
+  setHoveredEdge,
+  setHoveredVertex,
+  startEdgeCreation,
+  updatePendingEdgeTarget,
 } from '../model/graphState';
-import type { GraphState, VertexCountControlState } from '../model/types';
+import type {
+  EdgeId,
+  FlowPoint,
+  GraphState,
+  VertexCountControlState,
+  VertexId,
+} from '../model/types';
+import { getMatrixPositionByEdgeId, type MatrixCellPosition } from '../utils/matrixMapping';
 
 type GraphEditorApi = {
   graphState: GraphState;
   vertexCountControl: VertexCountControlState;
+  hoveredMatrixCell: MatrixCellPosition | null;
+  selectedMatrixCell: MatrixCellPosition | null;
   setVertexCountDraft: (value: string) => void;
   openVertexCountConfirmation: () => void;
   confirmVertexCountReconstruction: () => void;
   cancelVertexCountReconstruction: () => void;
   toggleMatrixCell: (rowIndex: number, columnIndex: number) => void;
+  handleNodeClick: (vertexId: VertexId, cursorPosition: FlowPoint) => void;
+  handleCanvasPointerMove: (cursorPosition: FlowPoint) => void;
+  handleNodeHover: (vertexId: VertexId | null) => void;
+  handleEdgeHover: (edgeId: EdgeId | null) => void;
+  handleEdgeSelect: (edgeId: EdgeId) => void;
+  cancelPendingEdgeCreation: () => void;
+  deleteSelectedGraphEdge: () => void;
 };
 
 export function useGraphEditor(): GraphEditorApi {
@@ -91,13 +115,73 @@ export function useGraphEditor(): GraphEditorApi {
     setGraphState((currentState) => applyMatrixToggle(currentState, rowIndex, columnIndex));
   };
 
+  const handleNodeClick = (vertexId: VertexId, cursorPosition: FlowPoint) => {
+    setGraphState((currentState) => {
+      if (currentState.pendingEdgeSourceId === null) {
+        return startEdgeCreation(currentState, vertexId, cursorPosition);
+      }
+
+      return finalizeEdgeCreation(currentState, vertexId);
+    });
+  };
+
+  const handleCanvasPointerMove = (cursorPosition: FlowPoint) => {
+    setGraphState((currentState) => updatePendingEdgeTarget(currentState, cursorPosition));
+  };
+
+  const handleNodeHover = (vertexId: VertexId | null) => {
+    setGraphState((currentState) => setHoveredVertex(currentState, vertexId));
+  };
+
+  const handleEdgeHover = (edgeId: EdgeId | null) => {
+    setGraphState((currentState) => setHoveredEdge(currentState, edgeId));
+  };
+
+  const handleEdgeSelect = (edgeId: EdgeId) => {
+    setGraphState((currentState) => {
+      if (currentState.pendingEdgeSourceId !== null) {
+        return currentState;
+      }
+
+      return selectEdge(currentState, edgeId);
+    });
+  };
+
+  const cancelPendingEdgeCreation = () => {
+    setGraphState((currentState) => cancelEdgeCreation(currentState));
+  };
+
+  const deleteSelectedGraphEdge = () => {
+    setGraphState((currentState) => deleteSelectedEdge(currentState));
+  };
+
+  const hoveredMatrixCell = useMemo(
+    () => getMatrixPositionByEdgeId(graphState.hoveredEdgeId, graphState.vertices),
+    [graphState.hoveredEdgeId, graphState.vertices],
+  );
+
+  const selectedMatrixCell = useMemo(
+    () => getMatrixPositionByEdgeId(graphState.selectedEdgeId, graphState.vertices),
+    [graphState.selectedEdgeId, graphState.vertices],
+  );
+
   return {
     graphState,
     vertexCountControl,
+    hoveredMatrixCell,
+    selectedMatrixCell,
     setVertexCountDraft,
     openVertexCountConfirmation,
     confirmVertexCountReconstruction,
     cancelVertexCountReconstruction,
     toggleMatrixCell,
+    handleNodeClick,
+    handleCanvasPointerMove,
+    handleNodeHover,
+    handleEdgeHover,
+    handleEdgeSelect,
+    cancelPendingEdgeCreation,
+    deleteSelectedGraphEdge,
   };
 }
+

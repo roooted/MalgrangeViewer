@@ -1,8 +1,5 @@
-﻿import {
-  GRAPH_CENTER_X,
-  GRAPH_CENTER_Y,
-  GRAPH_NODE_RADIUS,
-} from './circleLayout';
+﻿import { GRAPH_CENTER_X, GRAPH_CENTER_Y, GRAPH_NODE_RADIUS } from './circleLayout';
+import { EDGE_MUTUAL_MAX_CURVE_OFFSET, EDGE_MUTUAL_MIN_CURVE_OFFSET } from './colors';
 
 type Point = {
   x: number;
@@ -40,6 +37,14 @@ const multiply = (point: Point, factor: number): Point => ({
   x: point.x * factor,
   y: point.y * factor,
 });
+
+const midpoint = (first: Point, second: Point): Point => ({
+  x: (first.x + second.x) / 2,
+  y: (first.y + second.y) / 2,
+});
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
 
 type ArrowShape = {
   shaftEnd: Point;
@@ -80,6 +85,52 @@ export const getStraightEdgeGeometry = (
   };
 };
 
+export const getTemporaryStraightEdgeGeometry = (
+  sourceCenter: Point,
+  cursorPoint: Point,
+): StraightEdgeGeometry => {
+  const direction = normalize(cursorPoint.x - sourceCenter.x, cursorPoint.y - sourceCenter.y);
+  const start = add(sourceCenter, multiply(direction, GRAPH_NODE_RADIUS));
+  const minimumTipDistance = EDGE_ARROW_LENGTH + 4;
+  const currentTipDistance = Math.hypot(cursorPoint.x - start.x, cursorPoint.y - start.y);
+  const tip =
+    currentTipDistance >= minimumTipDistance
+      ? cursorPoint
+      : add(start, multiply(direction, minimumTipDistance));
+  const arrowShape = createArrowShape(tip, direction);
+
+  return {
+    linePath: `M ${toPrecision(start.x)} ${toPrecision(start.y)} L ${toPrecision(arrowShape.shaftEnd.x)} ${toPrecision(arrowShape.shaftEnd.y)}`,
+    arrowPath: arrowShape.arrowPath,
+  };
+};
+
+export type CurvedEdgeGeometry = {
+  curvePath: string;
+  arrowPath: string;
+};
+
+export const getCurvedEdgeGeometry = (
+  sourceCenter: Point,
+  targetCenter: Point,
+  bendDirection: 1 | -1,
+): CurvedEdgeGeometry => {
+  const direction = normalize(targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y);
+  const normal = multiply(perpendicular(direction), bendDirection);
+  const start = add(sourceCenter, multiply(direction, GRAPH_NODE_RADIUS));
+  const tip = add(targetCenter, multiply(direction, -(GRAPH_NODE_RADIUS + 1)));
+  const distance = Math.hypot(targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y);
+  const curveOffset = clamp(distance * 0.24, EDGE_MUTUAL_MIN_CURVE_OFFSET, EDGE_MUTUAL_MAX_CURVE_OFFSET);
+  const control = add(midpoint(start, tip), multiply(normal, curveOffset));
+  const tipDirection = normalize(tip.x - control.x, tip.y - control.y);
+  const arrowShape = createArrowShape(tip, tipDirection);
+
+  return {
+    curvePath: `M ${toPrecision(start.x)} ${toPrecision(start.y)} Q ${toPrecision(control.x)} ${toPrecision(control.y)}, ${toPrecision(arrowShape.shaftEnd.x)} ${toPrecision(arrowShape.shaftEnd.y)}`,
+    arrowPath: arrowShape.arrowPath,
+  };
+};
+
 export type LoopEdgeGeometry = {
   loopPath: string;
   arrowPath: string;
@@ -109,7 +160,8 @@ export const getLoopEdgeGeometry = (nodeCenter: Point): LoopEdgeGeometry => {
   const arrowShape = createArrowShape(end, endDirection);
 
   return {
-    loopPath: `M ${toPrecision(start.x)} ${toPrecision(start.y)} C ${toPrecision(control1.x)} ${toPrecision(control1.y)}, ${toPrecision(control2.x)} ${toPrecision(control2.y)}, ${toPrecision(end.x)} ${toPrecision(end.y)}`,
+    loopPath: `M ${toPrecision(start.x)} ${toPrecision(start.y)} C ${toPrecision(control1.x)} ${toPrecision(control1.y)}, ${toPrecision(control2.x)} ${toPrecision(control2.y)}, ${toPrecision(arrowShape.shaftEnd.x)} ${toPrecision(arrowShape.shaftEnd.y)}`,
     arrowPath: arrowShape.arrowPath,
   };
 };
+
