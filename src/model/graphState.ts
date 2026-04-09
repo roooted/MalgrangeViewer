@@ -1,7 +1,6 @@
 ﻿import type {
   Edge,
   EdgeId,
-  FlowPoint,
   GraphState,
   HistoryAction,
   HistoryState,
@@ -56,9 +55,7 @@ export const createEmptyGraphState = (vertexCount = DEFAULT_VERTEX_COUNT): Graph
     matrix: createZeroMatrix(normalizedVertexCount),
     selectedEdgeId: null,
     hoveredEdgeId: null,
-    hoveredVertexId: null,
     pendingEdgeSourceId: null,
-    pendingEdgeTarget: null,
     componentResults: [],
     history: createEmptyHistoryState(),
   };
@@ -143,27 +140,6 @@ export const rebuildMatrixFromEdges = (graphState: GraphState): GraphState => ({
   matrix: createMatrixFromEdges(graphState.vertexCount, graphState.edges),
 });
 
-export const setHoveredVertex = (
-  graphState: GraphState,
-  hoveredVertexId: VertexId | null,
-): GraphState => {
-  if (hoveredVertexId !== null && !isVertexInGraph(graphState, hoveredVertexId)) {
-    return {
-      ...graphState,
-      hoveredVertexId: null,
-    };
-  }
-
-  if (graphState.hoveredVertexId === hoveredVertexId) {
-    return graphState;
-  }
-
-  return {
-    ...graphState,
-    hoveredVertexId,
-  };
-};
-
 export const setHoveredEdge = (graphState: GraphState, hoveredEdgeId: EdgeId | null): GraphState => {
   if (hoveredEdgeId !== null && !hasEdgeId(graphState.edges, hoveredEdgeId)) {
     if (graphState.hoveredEdgeId === null) {
@@ -204,11 +180,7 @@ export const selectEdge = (graphState: GraphState, edgeId: EdgeId | null): Graph
   };
 };
 
-export const startEdgeCreation = (
-  graphState: GraphState,
-  sourceVertexId: VertexId,
-  initialTarget: FlowPoint | null,
-): GraphState => {
+export const startEdgeCreation = (graphState: GraphState, sourceVertexId: VertexId): GraphState => {
   if (!isVertexInGraph(graphState, sourceVertexId)) {
     return graphState;
   }
@@ -216,36 +188,19 @@ export const startEdgeCreation = (
   return {
     ...graphState,
     pendingEdgeSourceId: sourceVertexId,
-    pendingEdgeTarget: initialTarget,
     selectedEdgeId: null,
     hoveredEdgeId: null,
   };
 };
 
-// Временная дуга живет в состоянии графа, чтобы UI и матрица читали единый источник истины.
-export const updatePendingEdgeTarget = (
-  graphState: GraphState,
-  point: FlowPoint,
-): GraphState => {
+export const cancelEdgeCreation = (graphState: GraphState): GraphState => {
   if (graphState.pendingEdgeSourceId === null) {
     return graphState;
   }
 
   return {
     ...graphState,
-    pendingEdgeTarget: point,
-  };
-};
-
-export const cancelEdgeCreation = (graphState: GraphState): GraphState => {
-  if (graphState.pendingEdgeSourceId === null && graphState.pendingEdgeTarget === null) {
-    return graphState;
-  }
-
-  return {
-    ...graphState,
     pendingEdgeSourceId: null,
-    pendingEdgeTarget: null,
   };
 };
 
@@ -259,7 +214,6 @@ export const finalizeEdgeCreation = (graphState: GraphState, targetVertexId: Ver
   const clearedCreationState: GraphState = {
     ...graphState,
     pendingEdgeSourceId: null,
-    pendingEdgeTarget: null,
   };
 
   if (!isVertexInGraph(clearedCreationState, targetVertexId)) {
@@ -311,4 +265,3 @@ export const createInitialVertexCountControlState = (): VertexCountControlState 
   pendingValue: null,
   isConfirmOpen: false,
 });
-

@@ -7,7 +7,7 @@
   type Node,
   type ReactFlowInstance,
 } from '@xyflow/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Edge, EdgeId, FlowPoint, Vertex, VertexId } from '../model/types';
 import { createCircleLayout, GRAPH_NODE_RADIUS } from '../utils/circleLayout';
 import { hasMutualPair } from '../utils/edgePairing';
@@ -19,16 +19,12 @@ import type { CurvedEdgeRenderData, EdgeRenderData } from './edgeRenderTypes';
 type GraphCanvasProps = {
   vertices: Vertex[];
   edges: Edge[];
-  hoveredVertexId: VertexId | null;
   pendingEdgeSourceId: VertexId | null;
-  pendingEdgeTarget: FlowPoint | null;
   hoveredEdgeId: EdgeId | null;
   selectedEdgeId: EdgeId | null;
-  onNodeClick: (vertexId: VertexId, cursorPosition: FlowPoint) => void;
-  onNodeHover: (vertexId: VertexId | null) => void;
+  onNodeClick: (vertexId: VertexId) => void;
   onEdgeHover: (edgeId: EdgeId | null) => void;
   onEdgeSelect: (edgeId: EdgeId) => void;
-  onPointerMove: (cursorPosition: FlowPoint) => void;
 };
 
 const edgeTypes: EdgeTypes = {
@@ -37,18 +33,12 @@ const edgeTypes: EdgeTypes = {
   loop: LoopEdge,
 };
 
+const FIT_VIEW_OPTIONS = { padding: 0.22 };
+
 const isDomainEdgeId = (value: string): value is EdgeId => value.includes('->');
 
-const getNodeClassName = (
-  vertexId: VertexId,
-  hoveredVertexId: VertexId | null,
-  pendingEdgeSourceId: VertexId | null,
-): string => {
+const getNodeClassName = (vertexId: VertexId, pendingEdgeSourceId: VertexId | null): string => {
   const classes = ['graph-node'];
-
-  if (hoveredVertexId === vertexId) {
-    classes.push('graph-node--hovered');
-  }
 
   if (pendingEdgeSourceId === vertexId) {
     classes.push('graph-node--source');
@@ -60,32 +50,66 @@ const getNodeClassName = (
 export function GraphCanvas({
   vertices,
   edges,
-  hoveredVertexId,
   pendingEdgeSourceId,
-  pendingEdgeTarget,
   hoveredEdgeId,
   selectedEdgeId,
   onNodeClick,
-  onNodeHover,
   onEdgeHover,
   onEdgeSelect,
-  onPointerMove,
 }: GraphCanvasProps) {
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance<Node, FlowEdge> | null>(null);
+  const [temporaryTarget, setTemporaryTarget] = useState<FlowPoint | null>(null);
+  const animationFrameIdRef = useRef<number | null>(null);
+  const pendingTargetRef = useRef<FlowPoint | null>(null);
+  const lastFittedLayoutKeyRef = useRef<string | null>(null);
   const layoutItems = useMemo(() => createCircleLayout(vertices), [vertices]);
+  const layoutKey = useMemo(() => vertices.map((vertex) => vertex.id).join('|'), [vertices]);
+  const isEdgeInteractionEnabled = pendingEdgeSourceId === null;
+
+  useEffect(() => {
+    if (!flowInstance) {
+      return;
+    }
+
+    if (lastFittedLayoutKeyRef.current === layoutKey) {
+      return;
+    }
+
+    flowInstance.fitView(FIT_VIEW_OPTIONS);
+    lastFittedLayoutKeyRef.current = layoutKey;
+  }, [flowInstance, layoutKey]);
+
+  useEffect(() => {
+    pendingTargetRef.current = null;
+    setTemporaryTarget(null);
+
+    if (animationFrameIdRef.current !== null) {
+      cancelAnimationFrame(animationFrameIdRef.current);
+      animationFrameIdRef.current = null;
+    }
+  }, [pendingEdgeSourceId]);
+
+  useEffect(
+    () => () => {
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+      }
+    },
+    [],
+  );
 
   const nodes = useMemo<Node[]>(
     () =>
       layoutItems.map(({ id, label, position }) => ({
         id,
         type: 'default',
-        className: getNodeClassName(id, hoveredVertexId, pendingEdgeSourceId),
+        className: getNodeClassName(id, pendingEdgeSourceId),
         position,
         data: { label },
         draggable: false,
         selectable: false,
       })),
-    [hoveredVertexId, layoutItems, pendingEdgeSourceId],
+    [layoutItems, pendingEdgeSourceId],
   );
 
   const flowEdges = useMemo(() => {
@@ -121,6 +145,7 @@ export function GraphCanvas({
             sourceCenter,
             targetCenter,
             variant,
+            isInteractive: isEdgeInteractionEnabled,
           } satisfies EdgeRenderData,
           selectable: false,
           focusable: false,
@@ -142,6 +167,7 @@ export function GraphCanvas({
             targetCenter,
             variant,
             bendDirection: sourceIndex < targetIndex ? 1 : -1,
+            isInteractive: isEdgeInteractionEnabled,
           } satisfies CurvedEdgeRenderData,
           selectable: false,
           focusable: false,
@@ -158,6 +184,7 @@ export function GraphCanvas({
           sourceCenter,
           targetCenter,
           variant,
+          isInteractive: isEdgeInteractionEnabled,
         } satisfies EdgeRenderData,
         selectable: false,
         focusable: false,
@@ -175,11 +202,12 @@ export function GraphCanvas({
           type: 'straightCenter',
           data: {
             sourceCenter,
-            targetCenter: pendingEdgeTarget ?? {
+            targetCenter: temporaryTarget ?? {
               x: sourceCenter.x + GRAPH_NODE_RADIUS * 2.1,
               y: sourceCenter.y,
             },
             variant: 'temporary',
+            isInteractive: false,
           } satisfies EdgeRenderData,
           selectable: false,
           focusable: false,
@@ -188,7 +216,15 @@ export function GraphCanvas({
     }
 
     return result;
-  }, [edges, hoveredEdgeId, layoutItems, pendingEdgeSourceId, pendingEdgeTarget, selectedEdgeId]);
+  }, [
+    edges,
+    hoveredEdgeId,
+    isEdgeInteractionEnabled,
+    layoutItems,
+    pendingEdgeSourceId,
+    selectedEdgeId,
+    temporaryTarget,
+  ]);
 
   const toFlowPosition = useCallback(
     (event: { clientX: number; clientY: number }): FlowPoint | null => {
@@ -204,24 +240,38 @@ export function GraphCanvas({
     [flowInstance],
   );
 
+  const commitPendingTarget = useCallback(() => {
+    animationFrameIdRef.current = null;
+    setTemporaryTarget(pendingTargetRef.current);
+  }, []);
+
   const handlePointerMove = useCallback(
     (event: { clientX: number; clientY: number }) => {
+      if (pendingEdgeSourceId === null) {
+        return;
+      }
+
       const nextPosition = toFlowPosition(event);
 
       if (!nextPosition) {
         return;
       }
 
-      onPointerMove(nextPosition);
+      pendingTargetRef.current = nextPosition;
+
+      if (animationFrameIdRef.current !== null) {
+        return;
+      }
+
+      animationFrameIdRef.current = requestAnimationFrame(commitPendingTarget);
     },
-    [onPointerMove, toFlowPosition],
+    [commitPendingTarget, pendingEdgeSourceId, toFlowPosition],
   );
 
   return (
     <div className="graph-canvas">
       <ReactFlow
         nodeOrigin={[0.5, 0.5]}
-        fitView
         nodes={nodes}
         edges={flowEdges}
         edgeTypes={edgeTypes}
@@ -232,32 +282,30 @@ export function GraphCanvas({
         zoomOnDoubleClick={false}
         deleteKeyCode={null}
         proOptions={{ hideAttribution: true }}
-        fitViewOptions={{ padding: 0.22 }}
+        fitViewOptions={FIT_VIEW_OPTIONS}
         onInit={(instance) => setFlowInstance(instance)}
         onPaneMouseMove={(event) => handlePointerMove(event)}
         onNodeMouseMove={(event) => handlePointerMove(event)}
         onEdgeMouseMove={(event) => handlePointerMove(event)}
-        onNodeClick={(event, node) => {
-          const cursorPosition = toFlowPosition(event);
-
-          if (!cursorPosition) {
-            return;
-          }
-
-          onNodeClick(node.id as VertexId, cursorPosition);
+        onNodeClick={(_, node) => {
+          onNodeClick(node.id as VertexId);
         }}
-        onNodeMouseEnter={(_, node) => onNodeHover(node.id as VertexId)}
-        onNodeMouseLeave={() => onNodeHover(null)}
         onEdgeMouseEnter={(_, edge) => {
-          if (!isDomainEdgeId(edge.id)) {
+          if (!isEdgeInteractionEnabled || !isDomainEdgeId(edge.id)) {
             return;
           }
 
           onEdgeHover(edge.id);
         }}
-        onEdgeMouseLeave={() => onEdgeHover(null)}
+        onEdgeMouseLeave={() => {
+          if (!isEdgeInteractionEnabled) {
+            return;
+          }
+
+          onEdgeHover(null);
+        }}
         onEdgeClick={(_, edge) => {
-          if (!isDomainEdgeId(edge.id)) {
+          if (!isEdgeInteractionEnabled || !isDomainEdgeId(edge.id)) {
             return;
           }
 
@@ -274,4 +322,3 @@ export function GraphCanvas({
     </div>
   );
 }
-

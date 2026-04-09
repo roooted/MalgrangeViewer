@@ -92,16 +92,12 @@ function App() {
             <GraphCanvas
               vertices={editor.graphState.vertices}
               edges={editor.graphState.edges}
-              hoveredVertexId={editor.graphState.hoveredVertexId}
               pendingEdgeSourceId={editor.graphState.pendingEdgeSourceId}
-              pendingEdgeTarget={editor.graphState.pendingEdgeTarget}
               hoveredEdgeId={editor.graphState.hoveredEdgeId}
               selectedEdgeId={editor.graphState.selectedEdgeId}
               onNodeClick={editor.handleNodeClick}
-              onNodeHover={editor.handleNodeHover}
               onEdgeHover={editor.handleEdgeHover}
               onEdgeSelect={editor.handleEdgeSelect}
-              onPointerMove={editor.handleCanvasPointerMove}
             />
           </div>
         </section>

@@ -14,13 +14,19 @@ export function StraightCenterEdge({ data }: EdgeProps) {
   }
 
   const style = getEdgeVariantStyle(edgeData.variant);
+  const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry =
     edgeData.variant === 'temporary'
       ? getTemporaryStraightEdgeGeometry(edgeData.sourceCenter, edgeData.targetCenter)
       : getStraightEdgeGeometry(edgeData.sourceCenter, edgeData.targetCenter);
 
   return (
-    <g style={{ pointerEvents: style.pointerEvents, opacity: style.opacity }}>
+    <g
+      style={{
+        pointerEvents: isInteractive ? style.pointerEvents : 'none',
+        opacity: style.opacity,
+      }}
+    >
       <BaseEdge
         path={geometry.linePath}
         style={{
@@ -32,7 +38,7 @@ export function StraightCenterEdge({ data }: EdgeProps) {
           pointerEvents: 'none',
         }}
       />
-      {style.isInteractive ? (
+      {isInteractive ? (
         <path
           d={geometry.linePath}
           fill="none"

@@ -11,6 +11,7 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
   }
 
   const style = getEdgeVariantStyle(edgeData.variant);
+  const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry = getCurvedEdgeGeometry(
     edgeData.sourceCenter,
     edgeData.targetCenter,
@@ -18,7 +19,12 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
   );
 
   return (
-    <g style={{ pointerEvents: style.pointerEvents, opacity: style.opacity }}>
+    <g
+      style={{
+        pointerEvents: isInteractive ? style.pointerEvents : 'none',
+        opacity: style.opacity,
+      }}
+    >
       <BaseEdge
         path={geometry.curvePath}
         style={{
@@ -30,7 +36,7 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
           pointerEvents: 'none',
         }}
       />
-      {style.isInteractive ? (
+      {isInteractive ? (
         <path
           d={geometry.curvePath}
           fill="none"

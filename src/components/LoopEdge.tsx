@@ -11,10 +11,16 @@ export function LoopEdge({ data }: EdgeProps) {
   }
 
   const style = getEdgeVariantStyle(edgeData.variant);
+  const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry = getLoopEdgeGeometry(edgeData.sourceCenter);
 
   return (
-    <g style={{ pointerEvents: style.pointerEvents, opacity: style.opacity }}>
+    <g
+      style={{
+        pointerEvents: isInteractive ? style.pointerEvents : 'none',
+        opacity: style.opacity,
+      }}
+    >
       <BaseEdge
         path={geometry.loopPath}
         style={{
@@ -26,7 +32,7 @@ export function LoopEdge({ data }: EdgeProps) {
           pointerEvents: 'none',
         }}
       />
-      {style.isInteractive ? (
+      {isInteractive ? (
         <path
           d={geometry.loopPath}
           fill="none"

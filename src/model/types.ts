@@ -49,9 +49,7 @@ export interface GraphState {
   matrix: AdjacencyMatrix;
   selectedEdgeId: EdgeId | null;
   hoveredEdgeId: EdgeId | null;
-  hoveredVertexId: VertexId | null;
   pendingEdgeSourceId: VertexId | null;
-  pendingEdgeTarget: FlowPoint | null;
   componentResults: ComponentResult[];
   history: HistoryState;
 }
@@ -67,4 +65,3 @@ export interface SimpleGraph {
   adjacencyList: Record<VertexId, VertexId[]>;
   reverseAdjacencyList: Record<VertexId, VertexId[]>;
 }
-

@@ -10,17 +10,9 @@ import {
   reconstructGraphState,
   selectEdge,
   setHoveredEdge,
-  setHoveredVertex,
   startEdgeCreation,
-  updatePendingEdgeTarget,
 } from '../model/graphState';
-import type {
-  EdgeId,
-  FlowPoint,
-  GraphState,
-  VertexCountControlState,
-  VertexId,
-} from '../model/types';
+import type { EdgeId, GraphState, VertexCountControlState, VertexId } from '../model/types';
 import { getMatrixPositionByEdgeId, type MatrixCellPosition } from '../utils/matrixMapping';
 
 type GraphEditorApi = {
@@ -33,9 +25,7 @@ type GraphEditorApi = {
   confirmVertexCountReconstruction: () => void;
   cancelVertexCountReconstruction: () => void;
   toggleMatrixCell: (rowIndex: number, columnIndex: number) => void;
-  handleNodeClick: (vertexId: VertexId, cursorPosition: FlowPoint) => void;
-  handleCanvasPointerMove: (cursorPosition: FlowPoint) => void;
-  handleNodeHover: (vertexId: VertexId | null) => void;
+  handleNodeClick: (vertexId: VertexId) => void;
   handleEdgeHover: (edgeId: EdgeId | null) => void;
   handleEdgeSelect: (edgeId: EdgeId) => void;
   cancelPendingEdgeCreation: () => void;
@@ -115,22 +105,14 @@ export function useGraphEditor(): GraphEditorApi {
     setGraphState((currentState) => applyMatrixToggle(currentState, rowIndex, columnIndex));
   };
 
-  const handleNodeClick = (vertexId: VertexId, cursorPosition: FlowPoint) => {
+  const handleNodeClick = (vertexId: VertexId) => {
     setGraphState((currentState) => {
       if (currentState.pendingEdgeSourceId === null) {
-        return startEdgeCreation(currentState, vertexId, cursorPosition);
+        return startEdgeCreation(currentState, vertexId);
       }
 
       return finalizeEdgeCreation(currentState, vertexId);
     });
-  };
-
-  const handleCanvasPointerMove = (cursorPosition: FlowPoint) => {
-    setGraphState((currentState) => updatePendingEdgeTarget(currentState, cursorPosition));
-  };
-
-  const handleNodeHover = (vertexId: VertexId | null) => {
-    setGraphState((currentState) => setHoveredVertex(currentState, vertexId));
   };
 
   const handleEdgeHover = (edgeId: EdgeId | null) => {
@@ -176,12 +158,9 @@ export function useGraphEditor(): GraphEditorApi {
     cancelVertexCountReconstruction,
     toggleMatrixCell,
     handleNodeClick,
-    handleCanvasPointerMove,
-    handleNodeHover,
     handleEdgeHover,
     handleEdgeSelect,
     cancelPendingEdgeCreation,
     deleteSelectedGraphEdge,
   };
 }
-
