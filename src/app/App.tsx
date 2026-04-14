@@ -16,21 +16,38 @@ type AppCssVariables = CSSProperties & {
 
 function App() {
   const editor = useGraphEditor();
-  const undoRedo = useUndoRedo(editor.graphState.history);
+  const undoRedo = useUndoRedo(editor.graphState.history, editor.undo, editor.redo);
+  const { canUndo, canRedo, undo, redo } = undoRedo;
   const malgrange = useMalgrange(editor.graphState);
   const appStyle: AppCssVariables = {
     '--matrix-cell-size': `${MATRIX_CELL_SIZE_PX}px`,
   };
+  const isAnyConfirmOpen = editor.vertexCountControl.isConfirmOpen || editor.isClearConfirmOpen;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (editor.vertexCountControl.isConfirmOpen) {
+      if (isAnyConfirmOpen) {
+        return;
+      }
+
+      const lowerKey = event.key.toLowerCase();
+
+      if (event.ctrlKey && (lowerKey === 'z' || lowerKey === 'я') && canUndo) {
+        event.preventDefault();
+        undo();
+        return;
+      }
+
+      if (event.ctrlKey && (lowerKey === 'y' || lowerKey === 'н') && canRedo) {
+        event.preventDefault();
+        redo();
         return;
       }
 
       if (event.key === 'Escape' && editor.graphState.pendingEdgeSourceId !== null) {
         event.preventDefault();
         editor.cancelPendingEdgeCreation();
+        return;
       }
 
       if (event.key === 'Delete' && editor.graphState.selectedEdgeId !== null) {
@@ -49,7 +66,11 @@ function App() {
     editor.deleteSelectedGraphEdge,
     editor.graphState.pendingEdgeSourceId,
     editor.graphState.selectedEdgeId,
-    editor.vertexCountControl.isConfirmOpen,
+    isAnyConfirmOpen,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
   ]);
 
   return (
@@ -68,12 +89,11 @@ function App() {
           vertexCountValue={editor.vertexCountControl.draftValue}
           minVertexCount={MIN_VERTEX_COUNT}
           maxVertexCount={MAX_VERTEX_COUNT}
-          canUndo={undoRedo.canUndo}
-          canRedo={undoRedo.canRedo}
+          canLoadExample={editor.canLoadExample}
           onVertexCountChange={editor.setVertexCountDraft}
           onApplyVertexCount={editor.openVertexCountConfirmation}
-          onUndo={undoRedo.undo}
-          onRedo={undoRedo.redo}
+          onLoadExample={editor.loadExampleGraph}
+          onClear={editor.openClearConfirmation}
         />
       </header>
 
@@ -99,6 +119,15 @@ function App() {
               onEdgeHover={editor.handleEdgeHover}
               onEdgeSelect={editor.handleEdgeSelect}
             />
+
+            <div className="graph-history-controls">
+              <button className="icon-button" type="button" onClick={undo} disabled={!canUndo}>
+                {'<'}
+              </button>
+              <button className="icon-button" type="button" onClick={redo} disabled={!canRedo}>
+                {'>'}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -136,10 +165,19 @@ function App() {
       </main>
 
       <ConfirmModal
-        isOpen={editor.vertexCountControl.isConfirmOpen}
-        pendingVertexCount={editor.vertexCountControl.pendingValue}
+        isOpen={editor.vertexCountControl.isConfirmOpen && editor.vertexCountControl.pendingValue !== null}
+        title="Reconstruct current graph?"
+        description={`Confirm reconstruction with ${editor.vertexCountControl.pendingValue ?? editor.graphState.vertexCount} isolated vertices. Current edges and undo/redo history will be cleared.`}
         onConfirm={editor.confirmVertexCountReconstruction}
         onCancel={editor.cancelVertexCountReconstruction}
+      />
+
+      <ConfirmModal
+        isOpen={editor.isClearConfirmOpen}
+        title="Clear current graph?"
+        description="Confirm clearing the current graph. All edges and undo/redo history will be removed."
+        onConfirm={editor.confirmClearGraph}
+        onCancel={editor.cancelClearGraph}
       />
     </div>
   );

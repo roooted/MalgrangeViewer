@@ -1,38 +1,26 @@
 ﻿type ConfirmModalProps = {
   isOpen: boolean;
-  pendingVertexCount: number | null;
+  title: string;
+  description: string;
   onConfirm: () => void;
   onCancel: () => void;
 };
 
-export function ConfirmModal({
-  isOpen,
-  pendingVertexCount,
-  onConfirm,
-  onCancel,
-}: ConfirmModalProps) {
-  if (!isOpen || pendingVertexCount === null) {
+export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel }: ConfirmModalProps) {
+  if (!isOpen) {
     return null;
   }
 
   return (
     <div className="modal-backdrop" role="presentation">
-      <div
-        aria-labelledby="confirm-modal-title"
-        aria-modal="true"
-        className="modal"
-        role="dialog"
-      >
+      <div aria-labelledby="confirm-modal-title" aria-modal="true" className="modal" role="dialog">
         <div>
           <h2 className="modal__title" id="confirm-modal-title">
-            Reconstruct current graph?
+            {title}
           </h2>
         </div>
 
-        <p className="modal__text">
-          Confirm reconstruction with {pendingVertexCount} isolated vertices. Current edges and
-          staged history will be cleared.
-        </p>
+        <p className="modal__text">{description}</p>
 
         <div className="modal__actions">
           <button className="button" type="button" onClick={onCancel}>

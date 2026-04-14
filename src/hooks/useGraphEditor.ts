@@ -8,22 +8,35 @@ import {
   deleteSelectedEdge,
   finalizeEdgeCreation,
   reconstructGraphState,
+  redoGraphState,
   selectEdge,
   setHoveredEdge,
   startEdgeCreation,
+  undoGraphState,
 } from '../model/graphState';
+import { EXAMPLE_PRESET_AVAILABLE, getExamplePreset } from '../model/presets';
 import type { EdgeId, GraphState, VertexCountControlState, VertexId } from '../model/types';
 import { getMatrixPositionByEdgeId, type MatrixCellPosition } from '../utils/matrixMapping';
 
 type GraphEditorApi = {
   graphState: GraphState;
   vertexCountControl: VertexCountControlState;
+  isClearConfirmOpen: boolean;
   hoveredMatrixCell: MatrixCellPosition | null;
   selectedMatrixCell: MatrixCellPosition | null;
+  canUndo: boolean;
+  canRedo: boolean;
+  canLoadExample: boolean;
   setVertexCountDraft: (value: string) => void;
   openVertexCountConfirmation: () => void;
   confirmVertexCountReconstruction: () => void;
   cancelVertexCountReconstruction: () => void;
+  openClearConfirmation: () => void;
+  confirmClearGraph: () => void;
+  cancelClearGraph: () => void;
+  loadExampleGraph: () => void;
+  undo: () => void;
+  redo: () => void;
   toggleMatrixCell: (rowIndex: number, columnIndex: number) => void;
   handleNodeClick: (vertexId: VertexId) => void;
   handleEdgeHover: (edgeId: EdgeId | null) => void;
@@ -37,6 +50,7 @@ export function useGraphEditor(): GraphEditorApi {
   const [vertexCountControl, setVertexCountControl] = useState<VertexCountControlState>(() =>
     createInitialVertexCountControlState(),
   );
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
   const setVertexCountDraft = (value: string) => {
     setVertexCountControl((currentState) => ({
@@ -71,6 +85,7 @@ export function useGraphEditor(): GraphEditorApi {
       return;
     }
 
+    setIsClearConfirmOpen(false);
     setVertexCountControl((currentState) => ({
       ...currentState,
       draftValue: String(nextVertexCount),
@@ -90,6 +105,7 @@ export function useGraphEditor(): GraphEditorApi {
       pendingValue: null,
       isConfirmOpen: false,
     });
+    setIsClearConfirmOpen(false);
   };
 
   const cancelVertexCountReconstruction = () => {
@@ -98,6 +114,51 @@ export function useGraphEditor(): GraphEditorApi {
       pendingValue: null,
       isConfirmOpen: false,
     });
+  };
+
+  const openClearConfirmation = () => {
+    setVertexCountControl((currentState) => ({
+      ...currentState,
+      pendingValue: null,
+      isConfirmOpen: false,
+    }));
+    setIsClearConfirmOpen(true);
+  };
+
+  const confirmClearGraph = () => {
+    const nextVertexCount = graphState.vertexCount;
+
+    setGraphState(reconstructGraphState(nextVertexCount));
+    setVertexCountControl({
+      draftValue: String(nextVertexCount),
+      pendingValue: null,
+      isConfirmOpen: false,
+    });
+    setIsClearConfirmOpen(false);
+  };
+
+  const cancelClearGraph = () => {
+    setIsClearConfirmOpen(false);
+  };
+
+  const loadExampleGraph = () => {
+    const exampleState = getExamplePreset();
+
+    setGraphState(exampleState);
+    setVertexCountControl({
+      draftValue: String(exampleState.vertexCount),
+      pendingValue: null,
+      isConfirmOpen: false,
+    });
+    setIsClearConfirmOpen(false);
+  };
+
+  const undo = () => {
+    setGraphState((currentState) => undoGraphState(currentState));
+  };
+
+  const redo = () => {
+    setGraphState((currentState) => redoGraphState(currentState));
   };
 
   const toggleMatrixCell = (rowIndex: number, columnIndex: number) => {
@@ -150,12 +211,22 @@ export function useGraphEditor(): GraphEditorApi {
   return {
     graphState,
     vertexCountControl,
+    isClearConfirmOpen,
     hoveredMatrixCell,
     selectedMatrixCell,
+    canUndo: graphState.history.past.length > 0,
+    canRedo: graphState.history.future.length > 0,
+    canLoadExample: EXAMPLE_PRESET_AVAILABLE,
     setVertexCountDraft,
     openVertexCountConfirmation,
     confirmVertexCountReconstruction,
     cancelVertexCountReconstruction,
+    openClearConfirmation,
+    confirmClearGraph,
+    cancelClearGraph,
+    loadExampleGraph,
+    undo,
+    redo,
     toggleMatrixCell,
     handleNodeClick,
     handleEdgeHover,

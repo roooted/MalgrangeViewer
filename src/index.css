@@ -141,6 +141,7 @@ p {
 }
 
 .workspace__graph-body {
+  position: relative;
   flex: 1;
   min-height: 620px;
   border-radius: 18px;
@@ -148,6 +149,15 @@ p {
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(14, 27, 43, 0.76) 0%, rgba(8, 18, 29, 0.94) 100%);
+}
+
+.graph-history-controls {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 12;
+  display: inline-flex;
+  gap: 10px;
 }
 
 .workspace__side {

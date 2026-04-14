@@ -4,24 +4,22 @@ type ControlPanelProps = {
   vertexCountValue: string;
   minVertexCount: number;
   maxVertexCount: number;
-  canUndo: boolean;
-  canRedo: boolean;
+  canLoadExample: boolean;
   onVertexCountChange: (value: string) => void;
   onApplyVertexCount: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
+  onLoadExample: () => void;
+  onClear: () => void;
 };
 
 export function ControlPanel({
   vertexCountValue,
   minVertexCount,
   maxVertexCount,
-  canUndo,
-  canRedo,
+  canLoadExample,
   onVertexCountChange,
   onApplyVertexCount,
-  onUndo,
-  onRedo,
+  onLoadExample,
+  onClear,
 }: ControlPanelProps) {
   const handleVertexCountKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -50,19 +48,10 @@ export function ControlPanel({
       </div>
 
       <div className="control-panel__group">
-        <button className="icon-button" type="button" onClick={onUndo} disabled={!canUndo}>
-          {'<'}
-        </button>
-        <button className="icon-button" type="button" onClick={onRedo} disabled={!canRedo}>
-          {'>'}
-        </button>
-      </div>
-
-      <div className="control-panel__group">
-        <button className="button" type="button" disabled>
+        <button className="button" type="button" disabled={!canLoadExample} onClick={onLoadExample}>
           Example
         </button>
-        <button className="button" type="button" disabled>
+        <button className="button" type="button" onClick={onClear}>
           Clear
         </button>
         <button className="button button--primary" type="button" disabled>
