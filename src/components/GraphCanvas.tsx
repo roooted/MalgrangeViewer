@@ -7,9 +7,10 @@
   type Node,
   type ReactFlowInstance,
 } from '@xyflow/react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Edge, EdgeId, FlowPoint, Vertex, VertexId } from '../model/types';
 import { createCircleLayout, GRAPH_NODE_RADIUS } from '../utils/circleLayout';
+import { COMPONENT_NODE_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../utils/colors';
 import { hasMutualPair } from '../utils/edgePairing';
 import { CurvedCenterEdge } from './CurvedCenterEdge';
 import { LoopEdge } from './LoopEdge';
@@ -22,9 +23,16 @@ type GraphCanvasProps = {
   pendingEdgeSourceId: VertexId | null;
   hoveredEdgeId: EdgeId | null;
   selectedEdgeId: EdgeId | null;
+  vertexColorById: Partial<Record<VertexId, string>>;
+  edgeColorById: Partial<Record<EdgeId, string>>;
   onNodeClick: (vertexId: VertexId) => void;
   onEdgeHover: (edgeId: EdgeId | null) => void;
   onEdgeSelect: (edgeId: EdgeId) => void;
+};
+
+type NodeStyleWithVariable = CSSProperties & {
+  '--node-component-color'?: string;
+  '--node-component-fill'?: string;
 };
 
 const edgeTypes: EdgeTypes = {
@@ -37,8 +45,16 @@ const FIT_VIEW_OPTIONS = { padding: 0.22 };
 
 const isDomainEdgeId = (value: string): value is EdgeId => value.includes('->');
 
-const getNodeClassName = (vertexId: VertexId, pendingEdgeSourceId: VertexId | null): string => {
+const getNodeClassName = (
+  vertexId: VertexId,
+  pendingEdgeSourceId: VertexId | null,
+  hasComponentColor: boolean,
+): string => {
   const classes = ['graph-node'];
+
+  if (hasComponentColor) {
+    classes.push('graph-node--component');
+  }
 
   if (pendingEdgeSourceId === vertexId) {
     classes.push('graph-node--source');
@@ -47,12 +63,26 @@ const getNodeClassName = (vertexId: VertexId, pendingEdgeSourceId: VertexId | nu
   return classes.join(' ');
 };
 
+const getNodeStyle = (componentColor?: string): NodeStyleWithVariable | undefined => {
+  if (!componentColor) {
+    return undefined;
+  }
+
+  return {
+    '--node-component-color': componentColor,
+    '--node-component-fill': hexToRgba(componentColor, getComponentFillOpacityByColor(componentColor)),
+    borderColor: COMPONENT_NODE_STROKE_COLOR,
+  };
+};
+
 export function GraphCanvas({
   vertices,
   edges,
   pendingEdgeSourceId,
   hoveredEdgeId,
   selectedEdgeId,
+  vertexColorById,
+  edgeColorById,
   onNodeClick,
   onEdgeHover,
   onEdgeSelect,
@@ -100,16 +130,21 @@ export function GraphCanvas({
 
   const nodes = useMemo<Node[]>(
     () =>
-      layoutItems.map(({ id, label, position }) => ({
-        id,
-        type: 'default',
-        className: getNodeClassName(id, pendingEdgeSourceId),
-        position,
-        data: { label },
-        draggable: false,
-        selectable: false,
-      })),
-    [layoutItems, pendingEdgeSourceId],
+      layoutItems.map(({ id, label, position }) => {
+        const componentColor = vertexColorById[id];
+
+        return {
+          id,
+          type: 'default',
+          className: getNodeClassName(id, pendingEdgeSourceId, Boolean(componentColor)),
+          position,
+          style: getNodeStyle(componentColor),
+          data: { label },
+          draggable: false,
+          selectable: false,
+        };
+      }),
+    [layoutItems, pendingEdgeSourceId, vertexColorById],
   );
 
   const flowEdges = useMemo(() => {
@@ -134,6 +169,7 @@ export function GraphCanvas({
 
       const variant: EdgeRenderData['variant'] =
         selectedEdgeId === edge.id ? 'selected' : hoveredEdgeId === edge.id ? 'hovered' : 'normal';
+      const componentColor = edgeColorById[edge.id];
 
       if (edge.source === edge.target) {
         result.push({
@@ -145,6 +181,7 @@ export function GraphCanvas({
             sourceCenter,
             targetCenter,
             variant,
+            componentColor,
             isInteractive: isEdgeInteractionEnabled,
           } satisfies EdgeRenderData,
           selectable: false,
@@ -166,6 +203,7 @@ export function GraphCanvas({
             sourceCenter,
             targetCenter,
             variant,
+            componentColor,
             bendDirection: sourceIndex < targetIndex ? 1 : -1,
             isInteractive: isEdgeInteractionEnabled,
           } satisfies CurvedEdgeRenderData,
@@ -184,6 +222,7 @@ export function GraphCanvas({
           sourceCenter,
           targetCenter,
           variant,
+          componentColor,
           isInteractive: isEdgeInteractionEnabled,
         } satisfies EdgeRenderData,
         selectable: false,
@@ -217,6 +256,7 @@ export function GraphCanvas({
 
     return result;
   }, [
+    edgeColorById,
     edges,
     hoveredEdgeId,
     isEdgeInteractionEnabled,
@@ -322,3 +362,6 @@ export function GraphCanvas({
     </div>
   );
 }
+
+
+

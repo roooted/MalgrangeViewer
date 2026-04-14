@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react';
 import {
+  applyComponentResultsToState,
   applyMatrixToggle,
   cancelEdgeCreation,
   clampVertexCount,
@@ -15,7 +16,13 @@ import {
   undoGraphState,
 } from '../model/graphState';
 import { EXAMPLE_PRESET_AVAILABLE, getExamplePreset } from '../model/presets';
-import type { EdgeId, GraphState, VertexCountControlState, VertexId } from '../model/types';
+import type {
+  ComponentResult,
+  EdgeId,
+  GraphState,
+  VertexCountControlState,
+  VertexId,
+} from '../model/types';
 import { getMatrixPositionByEdgeId, type MatrixCellPosition } from '../utils/matrixMapping';
 
 type GraphEditorApi = {
@@ -43,6 +50,7 @@ type GraphEditorApi = {
   handleEdgeSelect: (edgeId: EdgeId) => void;
   cancelPendingEdgeCreation: () => void;
   deleteSelectedGraphEdge: () => void;
+  applyMalgrangeResults: (componentResults: ComponentResult[]) => void;
 };
 
 export function useGraphEditor(): GraphEditorApi {
@@ -198,6 +206,10 @@ export function useGraphEditor(): GraphEditorApi {
     setGraphState((currentState) => deleteSelectedEdge(currentState));
   };
 
+  const applyMalgrangeResults = (componentResults: ComponentResult[]) => {
+    setGraphState((currentState) => applyComponentResultsToState(currentState, componentResults));
+  };
+
   const hoveredMatrixCell = useMemo(
     () => getMatrixPositionByEdgeId(graphState.hoveredEdgeId, graphState.vertices),
     [graphState.hoveredEdgeId, graphState.vertices],
@@ -233,5 +245,7 @@ export function useGraphEditor(): GraphEditorApi {
     handleEdgeSelect,
     cancelPendingEdgeCreation,
     deleteSelectedGraphEdge,
+    applyMalgrangeResults,
   };
 }
+

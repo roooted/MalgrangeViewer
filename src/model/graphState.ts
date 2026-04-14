@@ -8,6 +8,7 @@
   VertexCountControlState,
   VertexId,
 } from './types';
+import type { ComponentResult, SimpleGraph } from './types';
 import {
   createEdge,
   createEdgeFromIndexes,
@@ -382,3 +383,61 @@ export const createInitialVertexCountControlState = (): VertexCountControlState 
   pendingValue: null,
   isConfirmOpen: false,
 });
+
+
+type ComponentColorMaps = {
+  vertexColorById: Partial<Record<VertexId, string>>;
+  edgeColorById: Partial<Record<EdgeId, string>>;
+};
+
+export const buildSimpleGraphFromState = (graphState: GraphState): SimpleGraph => {
+  const adjacencyList = Object.fromEntries(
+    graphState.vertices.map((vertex) => [vertex.id, [] as VertexId[]]),
+  ) as Record<VertexId, VertexId[]>;
+  const reverseAdjacencyList = Object.fromEntries(
+    graphState.vertices.map((vertex) => [vertex.id, [] as VertexId[]]),
+  ) as Record<VertexId, VertexId[]>;
+
+  graphState.edges.forEach((edge) => {
+    adjacencyList[edge.source]?.push(edge.target);
+    reverseAdjacencyList[edge.target]?.push(edge.source);
+  });
+
+  return {
+    vertices: graphState.vertices.map((vertex) => vertex.id),
+    adjacencyList,
+    reverseAdjacencyList,
+  };
+};
+
+export const applyComponentResultsToState = (
+  graphState: GraphState,
+  componentResults: ComponentResult[],
+): GraphState => ({
+  ...graphState,
+  componentResults,
+});
+
+export const createComponentColorMaps = (
+  componentResults: ComponentResult[],
+): ComponentColorMaps => {
+  const vertexColorById: Partial<Record<VertexId, string>> = {};
+  const edgeColorById: Partial<Record<EdgeId, string>> = {};
+
+  // Цвет компоненты пробрасываем отдельно для вершин и внутренних дуг.
+  componentResults.forEach((component) => {
+    component.vertexIds.forEach((vertexId) => {
+      vertexColorById[vertexId] = component.color;
+    });
+
+    component.edgeIds.forEach((edgeId) => {
+      edgeColorById[edgeId] = component.color;
+    });
+  });
+
+  return {
+    vertexColorById,
+    edgeColorById,
+  };
+};
+

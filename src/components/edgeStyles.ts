@@ -20,7 +20,10 @@ type EdgeVariantStyle = {
   isInteractive: boolean;
 };
 
-export const getEdgeVariantStyle = (variant: EdgeVisualVariant): EdgeVariantStyle => {
+export const getEdgeVariantStyle = (
+  variant: EdgeVisualVariant,
+  componentColor?: string,
+): EdgeVariantStyle => {
   if (variant === 'hovered') {
     return {
       color: EDGE_HOVER_COLOR,
@@ -57,7 +60,7 @@ export const getEdgeVariantStyle = (variant: EdgeVisualVariant): EdgeVariantStyl
   }
 
   return {
-    color: EDGE_BASE_COLOR,
+    color: componentColor ?? EDGE_BASE_COLOR,
     strokeWidth: EDGE_STROKE_WIDTH,
     pointerEvents: 'auto',
     opacity: 1,
@@ -65,3 +68,4 @@ export const getEdgeVariantStyle = (variant: EdgeVisualVariant): EdgeVariantStyl
     isInteractive: true,
   };
 };
+

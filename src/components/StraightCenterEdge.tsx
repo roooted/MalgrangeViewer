@@ -13,7 +13,7 @@ export function StraightCenterEdge({ data }: EdgeProps) {
     return null;
   }
 
-  const style = getEdgeVariantStyle(edgeData.variant);
+  const style = getEdgeVariantStyle(edgeData.variant, edgeData.componentColor);
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry =
     edgeData.variant === 'temporary'
@@ -53,3 +53,4 @@ export function StraightCenterEdge({ data }: EdgeProps) {
     </g>
   );
 }
+

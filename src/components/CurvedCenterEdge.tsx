@@ -10,7 +10,7 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
     return null;
   }
 
-  const style = getEdgeVariantStyle(edgeData.variant);
+  const style = getEdgeVariantStyle(edgeData.variant, edgeData.componentColor);
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry = getCurvedEdgeGeometry(
     edgeData.sourceCenter,
@@ -51,3 +51,4 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
     </g>
   );
 }
+

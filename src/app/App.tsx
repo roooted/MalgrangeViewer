@@ -1,4 +1,4 @@
-﻿import { useEffect, type CSSProperties } from 'react';
+﻿import { useEffect, useMemo, type CSSProperties } from 'react';
 import { AdjacencyMatrix } from '../components/AdjacencyMatrix';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ControlPanel } from '../components/ControlPanel';
@@ -7,7 +7,12 @@ import { ResultPanel } from '../components/ResultPanel';
 import { useGraphEditor } from '../hooks/useGraphEditor';
 import { useMalgrange } from '../hooks/useMalgrange';
 import { useUndoRedo } from '../hooks/useUndoRedo';
-import { MAX_VERTEX_COUNT, MIN_VERTEX_COUNT } from '../model/graphState';
+import {
+  MAX_VERTEX_COUNT,
+  MIN_VERTEX_COUNT,
+  createComponentColorMaps,
+} from '../model/graphState';
+import { getMatrixPositionByEdgeId } from '../utils/matrixMapping';
 import { MATRIX_CELL_SIZE_PX } from '../utils/uiConstants';
 
 type AppCssVariables = CSSProperties & {
@@ -18,11 +23,34 @@ function App() {
   const editor = useGraphEditor();
   const undoRedo = useUndoRedo(editor.graphState.history, editor.undo, editor.redo);
   const { canUndo, canRedo, undo, redo } = undoRedo;
-  const malgrange = useMalgrange(editor.graphState);
+  const malgrange = useMalgrange(editor.graphState, editor.applyMalgrangeResults);
   const appStyle: AppCssVariables = {
     '--matrix-cell-size': `${MATRIX_CELL_SIZE_PX}px`,
   };
   const isAnyConfirmOpen = editor.vertexCountControl.isConfirmOpen || editor.isClearConfirmOpen;
+
+  const componentColorMaps = useMemo(
+    () => createComponentColorMaps(editor.graphState.componentResults),
+    [editor.graphState.componentResults],
+  );
+
+  const componentCellColorByKey = useMemo(() => {
+    const colorMap: Record<string, string> = {};
+
+    editor.graphState.componentResults.forEach((component) => {
+      component.edgeIds.forEach((edgeId) => {
+        const matrixPosition = getMatrixPositionByEdgeId(edgeId, editor.graphState.vertices);
+
+        if (!matrixPosition) {
+          return;
+        }
+
+        colorMap[`${matrixPosition.rowIndex}-${matrixPosition.columnIndex}`] = component.color;
+      });
+    });
+
+    return colorMap;
+  }, [editor.graphState.componentResults, editor.graphState.vertices]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -80,8 +108,8 @@ function App() {
           <span className="brand__eyebrow">Directed Graph Workspace</span>
           <h1 className="brand__title">Malgrange Graph Visualizer</h1>
           <p className="brand__description">
-            Edit directed edges on the graph and through the adjacency matrix. SCC calculation is
-            prepared and will be enabled in the next stage.
+            Edit directed edges on the graph and in the adjacency matrix, then run Malgrange SCC
+            detection on the current graph.
           </p>
         </div>
 
@@ -90,10 +118,12 @@ function App() {
           minVertexCount={MIN_VERTEX_COUNT}
           maxVertexCount={MAX_VERTEX_COUNT}
           canLoadExample={editor.canLoadExample}
+          canFindComponents={malgrange.canRun}
           onVertexCountChange={editor.setVertexCountDraft}
           onApplyVertexCount={editor.openVertexCountConfirmation}
           onLoadExample={editor.loadExampleGraph}
           onClear={editor.openClearConfirmation}
+          onFindComponents={malgrange.run}
         />
       </header>
 
@@ -115,6 +145,8 @@ function App() {
               pendingEdgeSourceId={editor.graphState.pendingEdgeSourceId}
               hoveredEdgeId={editor.graphState.hoveredEdgeId}
               selectedEdgeId={editor.graphState.selectedEdgeId}
+              vertexColorById={componentColorMaps.vertexColorById}
+              edgeColorById={componentColorMaps.edgeColorById}
               onNodeClick={editor.handleNodeClick}
               onEdgeHover={editor.handleEdgeHover}
               onEdgeSelect={editor.handleEdgeSelect}
@@ -146,6 +178,7 @@ function App() {
               matrix={editor.graphState.matrix}
               hoveredCell={editor.hoveredMatrixCell}
               selectedCell={editor.selectedMatrixCell}
+              componentCellColorByKey={componentCellColorByKey}
               onToggleCell={editor.toggleMatrixCell}
             />
           </section>
@@ -155,7 +188,7 @@ function App() {
               <span className="panel__eyebrow">Results</span>
               <h2 className="panel__title">Strongly connected components</h2>
               <p className="panel__description">
-                The Malgrange algorithm panel is prepared and will be activated in the next stage.
+                Click Find Components to run the standard Malgrange algorithm on the current graph.
               </p>
             </div>
 
@@ -184,3 +217,4 @@ function App() {
 }
 
 export default App;
+

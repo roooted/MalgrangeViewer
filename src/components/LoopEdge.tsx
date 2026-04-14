@@ -10,7 +10,7 @@ export function LoopEdge({ data }: EdgeProps) {
     return null;
   }
 
-  const style = getEdgeVariantStyle(edgeData.variant);
+  const style = getEdgeVariantStyle(edgeData.variant, edgeData.componentColor);
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const geometry = getLoopEdgeGeometry(edgeData.sourceCenter);
 
@@ -47,3 +47,4 @@ export function LoopEdge({ data }: EdgeProps) {
     </g>
   );
 }
+

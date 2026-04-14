@@ -5,10 +5,12 @@ type ControlPanelProps = {
   minVertexCount: number;
   maxVertexCount: number;
   canLoadExample: boolean;
+  canFindComponents: boolean;
   onVertexCountChange: (value: string) => void;
   onApplyVertexCount: () => void;
   onLoadExample: () => void;
   onClear: () => void;
+  onFindComponents: () => void;
 };
 
 export function ControlPanel({
@@ -16,10 +18,12 @@ export function ControlPanel({
   minVertexCount,
   maxVertexCount,
   canLoadExample,
+  canFindComponents,
   onVertexCountChange,
   onApplyVertexCount,
   onLoadExample,
   onClear,
+  onFindComponents,
 }: ControlPanelProps) {
   const handleVertexCountKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -54,10 +58,11 @@ export function ControlPanel({
         <button className="button" type="button" onClick={onClear}>
           Clear
         </button>
-        <button className="button button--primary" type="button" disabled>
+        <button className="button button--primary" type="button" disabled={!canFindComponents} onClick={onFindComponents}>
           Find Components
         </button>
       </div>
     </div>
   );
 }
+
