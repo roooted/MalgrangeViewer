@@ -21,23 +21,35 @@ export function ResultPanel({ results }: ResultPanelProps) {
     );
   }
 
+  const splitIndex = Math.ceil(results.length / 2);
+  const leftColumn = results.slice(0, splitIndex);
+  const rightColumn = results.slice(splitIndex);
+
+  const renderResultItem = (result: ComponentResult, index: number) => {
+    const itemStyle: ResultItemStyle = {
+      '--component-fill': hexToRgba(result.color, getComponentFillOpacityByColor(result.color)),
+      borderColor: COMPONENT_RESULT_STROKE_COLOR,
+    };
+
+    return (
+      <li className="result-panel__item result-panel__item--component" key={result.id} style={itemStyle}>
+        <div className="result-panel__item-title">Component {index + 1}</div>
+        <div className="result-panel__item-values">{result.vertexIds.join(', ')}</div>
+      </li>
+    );
+  };
+
   return (
     <div className="result-panel">
-      <ul className="result-panel__list">
-        {results.map((result, index) => {
-          const itemStyle: ResultItemStyle = {
-            '--component-fill': hexToRgba(result.color, getComponentFillOpacityByColor(result.color)),
-            borderColor: COMPONENT_RESULT_STROKE_COLOR,
-          };
+      <div className="result-panel__columns">
+        <ul className="result-panel__column">
+          {leftColumn.map((result, index) => renderResultItem(result, index))}
+        </ul>
 
-          return (
-            <li className="result-panel__item result-panel__item--component" key={result.id} style={itemStyle}>
-              <div className="result-panel__item-title">Component {index + 1}</div>
-              <div className="result-panel__item-values">{result.vertexIds.join(', ')}</div>
-            </li>
-          );
-        })}
-      </ul>
+        <ul className="result-panel__column">
+          {rightColumn.map((result, index) => renderResultItem(result, splitIndex + index))}
+        </ul>
+      </div>
     </div>
   );
 }

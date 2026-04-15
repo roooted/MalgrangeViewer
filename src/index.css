@@ -68,14 +68,13 @@ p {
 }
 
 .app-shell {
-  --matrix-cell-size: 42px;
+  --matrix-cell-size: 34px;
+  --matrix-cell-gap: 4px;
+  width: 100%;
   min-height: 100vh;
-  max-width: 1520px;
-  margin: 0 auto;
-  padding: 24px;
+  min-height: 100dvh;
+  padding: 18px;
   display: flex;
-  flex-direction: column;
-  gap: 18px;
 }
 
 .panel {
@@ -87,18 +86,16 @@ p {
 }
 
 .app-toolbar {
-  padding: 24px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+  padding: 20px 22px;
+  display: grid;
+  gap: 18px;
+  align-content: space-between;
 }
 
 .brand {
   display: grid;
   gap: 8px;
-  max-width: 620px;
+  max-width: 780px;
 }
 
 .brand__eyebrow,
@@ -123,14 +120,32 @@ p {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(360px, 0.92fr);
+  grid-template-columns: minmax(0, 1.78fr) minmax(560px, 1fr);
   gap: 18px;
   flex: 1;
+  height: 100%;
+  max-height: calc(100dvh - 36px);
+  min-height: 0;
+}
+
+.workspace__column {
+  display: grid;
+  min-height: 0;
+  gap: 18px;
+}
+
+.workspace__column--left {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.workspace__column--right {
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .workspace__graph,
 .workspace__matrix,
-.workspace__results {
+.workspace__results,
+.app-toolbar {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -138,12 +153,13 @@ p {
 
 .workspace__graph {
   padding: 18px;
+  min-height: 0;
 }
 
 .workspace__graph-body {
   position: relative;
   flex: 1;
-  min-height: 620px;
+  min-height: 0;
   border-radius: 18px;
   border: 1px solid rgba(151, 183, 232, 0.18);
   overflow: hidden;
@@ -158,13 +174,6 @@ p {
   z-index: 12;
   display: inline-flex;
   gap: 10px;
-}
-
-.workspace__side {
-  display: grid;
-  gap: 18px;
-  grid-template-rows: minmax(340px, 1fr) minmax(240px, 0.72fr);
-  min-height: 0;
 }
 
 .panel__header {
@@ -187,9 +196,10 @@ p {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-end;
-  gap: 20px;
+  align-content: flex-start;
+  gap: 12px;
 }
 
 .control-panel__group {
@@ -278,56 +288,60 @@ p {
 
 .workspace__matrix,
 .workspace__results {
-  padding: 18px;
+  padding: 16px;
+  min-height: 0;
 }
 
 .matrix {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  border-radius: 18px;
+  border-radius: 14px;
   border: 1px solid rgba(151, 183, 232, 0.18);
   background: linear-gradient(180deg, rgba(13, 25, 41, 0.88) 0%, rgba(8, 18, 29, 0.92) 100%);
-  padding: 14px;
+  padding: 8px;
   overflow: hidden;
 }
 
 .matrix__scroll {
-  height: 100%;
-  overflow: auto;
-  padding-right: 4px;
+  height: auto;
+  overflow: hidden;
+  padding-right: 0;
 }
 
 .matrix__table {
-  width: 100%;
-  min-width: max-content;
+  width: auto;
+  min-width: 0;
   border-collapse: separate;
-  border-spacing: 8px;
+  border-spacing: var(--matrix-cell-gap);
 }
 
 .matrix__table th {
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   color: var(--text-secondary);
   font-weight: 600;
   text-align: center;
+  line-height: 1;
+  padding: 0;
 }
 
 .matrix__corner {
-  width: 56px;
+  width: calc(var(--matrix-cell-size) + 2px);
 }
 
 .matrix__header {
-  min-width: calc(var(--matrix-cell-size) + 4px);
+  width: var(--matrix-cell-size);
+  min-width: var(--matrix-cell-size);
 }
 
 .matrix__cell {
   width: var(--matrix-cell-size);
   height: var(--matrix-cell-size);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--surface-muted);
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
@@ -367,13 +381,13 @@ p {
 .result-panel {
   flex: 1;
   min-height: 0;
-  border-radius: 18px;
+  border-radius: 14px;
   border: 1px solid rgba(151, 183, 232, 0.18);
   background: linear-gradient(180deg, rgba(13, 25, 41, 0.88) 0%, rgba(8, 18, 29, 0.92) 100%);
-  padding: 18px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .result-panel__empty {
@@ -387,17 +401,26 @@ p {
   text-align: center;
 }
 
-.result-panel__list {
+.result-panel__columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.result-panel__column {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 12px;
+  align-content: start;
+  gap: 10px;
 }
 
 .result-panel__item {
-  padding: 14px 16px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.03);
 }
@@ -407,14 +430,15 @@ p {
 }
 
 .result-panel__item-title {
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .result-panel__item-values {
-  margin-top: 6px;
+  margin-top: 4px;
   font-family: var(--font-mono);
+  font-size: 0.86rem;
   color: var(--text-primary);
 }
 
@@ -523,14 +547,19 @@ p {
 @media (max-width: 1180px) {
   .workspace {
     grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .workspace__column {
+    grid-template-rows: auto auto;
   }
 
   .workspace__graph-body {
     min-height: 520px;
   }
 
-  .workspace__side {
-    grid-template-rows: minmax(280px, auto) minmax(220px, auto);
+  .matrix__scroll {
+    overflow: auto;
   }
 }
 
@@ -561,6 +590,14 @@ p {
 
   .workspace__graph-body {
     min-height: 420px;
+  }
+
+  .matrix__scroll {
+    overflow: auto;
+  }
+
+  .result-panel__columns {
+    grid-template-columns: 1fr;
   }
 
   .modal__actions {
