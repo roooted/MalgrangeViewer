@@ -1,9 +1,17 @@
-﻿export const COMPONENT_COLORS = ['#1EFF00', '#D71111', '#C61998'];
+export const COMPONENT_COLORS = [
+  '#ff2222',
+  '#dddd11',
+  '#0000bd',
+  '#ff13c4',
+  '#ff661c',
+  '#11ff11',
+  '#2febe2',
+];
 
-export const COMPONENT_FILL_OPACITY = [0.3, 0.5, 0.6];
+export const COMPONENT_FILL_OPACITY = [0.9, 0.7, 0.9, 0.9, 0.9, 0.55, 0.9, 0.9];
 export const COMPONENT_NODE_STROKE_COLOR = '#44516F';
 export const COMPONENT_MATRIX_STROKE_COLOR = '#5D74C8';
-export const COMPONENT_RESULT_STROKE_COLOR = '#2F3A55';
+export const COMPONENT_RESULT_STROKE_COLOR = '#2f3a55';
 
 const clampToByte = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
 
@@ -102,3 +110,4 @@ export const EDGE_TEMPORARY_DASHARRAY = '7 5';
 
 export const EDGE_MUTUAL_MIN_CURVE_OFFSET = 26;
 export const EDGE_MUTUAL_MAX_CURVE_OFFSET = 46;
+
