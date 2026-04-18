@@ -38,6 +38,7 @@
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
 }
 
@@ -71,10 +72,13 @@ p {
   --matrix-cell-size: 34px;
   --matrix-cell-gap: 4px;
   width: 100%;
+  height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
   min-height: 100dvh;
   padding: 18px;
   display: flex;
+  flex-direction: column;
 }
 
 .panel {
@@ -122,14 +126,14 @@ p {
   display: grid;
   grid-template-columns: minmax(0, 1.78fr) minmax(560px, 1fr);
   gap: 18px;
-  flex: 1;
+  flex: 1 1 auto;
   height: 100%;
-  max-height: calc(100dvh - 36px);
   min-height: 0;
 }
 
 .workspace__column {
   display: grid;
+  height: 100%;
   min-height: 0;
   gap: 18px;
 }
@@ -153,12 +157,15 @@ p {
 
 .workspace__graph {
   padding: 18px;
+  height: 100%;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
 .workspace__graph-body {
   position: relative;
-  flex: 1;
+  height: 100%;
+  flex: 1 1 auto;
   min-height: 0;
   border-radius: 18px;
   border: 1px solid rgba(151, 183, 232, 0.18);
@@ -292,6 +299,11 @@ p {
   min-height: 0;
 }
 
+.workspace__results {
+  height: 100%;
+  flex: 1 1 auto;
+}
+
 .matrix {
   flex: 0 0 auto;
   min-height: 0;
@@ -379,7 +391,8 @@ p {
 }
 
 .result-panel {
-  flex: 1;
+  height: 100%;
+  flex: 1 1 auto;
   min-height: 0;
   border-radius: 14px;
   border: 1px solid rgba(151, 183, 232, 0.18);
@@ -388,10 +401,12 @@ p {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
 }
 
 .result-panel__empty {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   border: 1px dashed rgba(151, 183, 232, 0.2);
   border-radius: 16px;
   display: grid;
@@ -405,8 +420,9 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: hidden;
 }
 
 .result-panel__column {
