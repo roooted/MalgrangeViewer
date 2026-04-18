@@ -2,15 +2,29 @@
 import { createEmptyGraphState } from './graphState';
 import type { GraphState } from './types';
 
-const EXAMPLE_VERTEX_COUNT = 8;
+const EXAMPLE_VERTEX_COUNT = 11;
 const EXAMPLE_EDGE_INDEXES: Array<[number, number]> = [
-  [0, 1],
-  [1, 2],
-  [2, 0],
+  [0, 6],
+  [1, 0],
+  [1, 1],
+  [1, 7],
+  [1, 10],
+  [2, 2],
   [2, 3],
-  [4, 5],
-  [5, 4],
-  [7, 7],
+  [2, 8],
+  [2, 9],
+  [3, 3],
+  [3, 4],
+  [4, 3],
+  [5, 5],
+  [6, 10],
+  [8, 2],
+  [9, 3],
+  [9, 4],
+  [9, 8],
+  [10, 0],
+  [10, 4],
+  [10, 5],
 ];
 
 export const EXAMPLE_PRESET_AVAILABLE = true;
