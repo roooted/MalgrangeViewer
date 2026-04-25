@@ -1,0 +1,134 @@
+﻿:root {
+  --bg: #06111d;
+  --bg-accent: #0f2137;
+  --surface: rgba(10, 22, 37, 0.88);
+  --surface-strong: rgba(14, 29, 48, 0.96);
+  --surface-soft: rgba(19, 35, 56, 0.72);
+  --surface-muted: rgba(14, 28, 45, 0.68);
+  --border: rgba(132, 162, 204, 0.22);
+  --border-strong: rgba(151, 183, 232, 0.34);
+  --text-primary: #edf3ff;
+  --text-secondary: #9db1ce;
+  --text-muted: #70829d;
+  --accent: #8ea2ff;
+  --accent-strong: #b4c2ff;
+  --accent-soft: rgba(142, 162, 255, 0.14);
+  --success: #79c6a5;
+  --danger: #f18b8b;
+  --grid: rgba(116, 145, 188, 0.18);
+  --node-bg: linear-gradient(180deg, #15233a 0%, #0e1828 100%);
+  --node-border: rgba(141, 166, 213, 0.42);
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', 'Trebuchet MS', sans-serif;
+  --font-mono: 'IBM Plex Mono', Consolas, 'Courier New', monospace;
+  color-scheme: dark;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at top left, rgba(66, 105, 170, 0.28), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(74, 130, 164, 0.16), transparent 28%),
+    linear-gradient(180deg, #081322 0%, #050c16 100%);
+}
+
+button,
+input,
+table {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.react-flow__renderer,
+.react-flow__pane {
+  cursor: default;
+}
+
+.react-flow__background path {
+  stroke: var(--grid);
+}
+
+.react-flow__node-default.graph-node {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--node-border);
+  color: var(--text-primary);
+  background: var(--node-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+.react-flow__node-default.graph-node.graph-node--hovered,
+.react-flow__node-default.graph-node:hover {
+  border-color: rgba(176, 197, 255, 0.82);
+  box-shadow:
+    0 0 0 2px rgba(142, 162, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.react-flow__node-default.graph-node.graph-node--component {
+  background: var(--node-component-fill);
+  border-color: var(--node-component-color);
+}
+
+.react-flow__node-default.graph-node.graph-node--source {
+  border-color: rgba(186, 205, 255, 0.96);
+  box-shadow:
+    0 0 0 3px rgba(142, 162, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  filter: brightness(1.09);
+}
+
+.react-flow__edge {
+  cursor: pointer;
+}
+
+.react-flow__handle {
+  display: none;
+}
+
+.react-flow__attribution {
+  background: transparent;
+}
+
+.react-flow__edge path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+

@@ -1,0 +1,98 @@
+﻿:global(.matrix) {
+  flex: 0 0 auto;
+  min-height: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(151, 183, 232, 0.18);
+  background: linear-gradient(180deg, rgba(13, 25, 41, 0.88) 0%, rgba(8, 18, 29, 0.92) 100%);
+  padding: 8px;
+  overflow: hidden;
+}
+
+:global(.matrix__scroll) {
+  height: auto;
+  overflow: hidden;
+  padding-right: 0;
+}
+
+:global(.matrix__table) {
+  width: auto;
+  min-width: 0;
+  border-collapse: separate;
+  border-spacing: var(--matrix-cell-gap);
+}
+
+:global(.matrix__table th) {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+}
+
+:global(.matrix__corner) {
+  width: calc(var(--matrix-cell-size) + 2px);
+}
+
+:global(.matrix__header) {
+  width: var(--matrix-cell-size);
+  min-width: var(--matrix-cell-size);
+}
+
+:global(.matrix__cell) {
+  width: var(--matrix-cell-size);
+  height: var(--matrix-cell-size);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+:global(.matrix__cell--diagonal) {
+  background: rgba(9, 18, 31, 0.92);
+}
+
+:global(.matrix__cell--active) {
+  background: rgba(103, 133, 245, 0.42);
+  border-color: rgba(166, 189, 255, 0.68);
+  color: #f2f6ff;
+}
+
+:global(.matrix__cell--component) {
+  background: var(--matrix-component-fill);
+  border-color: var(--matrix-component-color);
+  color: #e8eeff;
+}
+
+:global(.matrix__cell--hovered) {
+  border-color: rgba(166, 189, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(142, 162, 255, 0.28);
+}
+
+:global(.matrix__cell--selected) {
+  border-style: dashed;
+  border-color: rgba(186, 205, 255, 0.88);
+  background: rgba(126, 151, 255, 0.5);
+  color: #f7faff;
+}
+
+:global(.matrix__cell:disabled) {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1180px) {
+  :global(.matrix__scroll) {
+    overflow: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  :global(.matrix__scroll) {
+    overflow: auto;
+  }
+}
+

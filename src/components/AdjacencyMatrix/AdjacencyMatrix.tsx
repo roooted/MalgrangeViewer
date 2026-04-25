@@ -1,7 +1,8 @@
 ﻿import type { CSSProperties } from 'react';
-import type { AdjacencyMatrix as MatrixData, Vertex } from '../model/types';
-import type { MatrixCellPosition } from '../utils/matrixMapping';
-import { COMPONENT_MATRIX_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../utils/colors';
+import type { AdjacencyMatrix as MatrixData, Vertex } from '../../model/types';
+import type { MatrixCellPosition } from '../../utils/matrixMapping';
+import { COMPONENT_MATRIX_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../../utils/colors';
+import './AdjacencyMatrix.module.css';
 
 type AdjacencyMatrixProps = {
   vertices: Vertex[];
@@ -89,3 +90,5 @@ export function AdjacencyMatrix({
     </div>
   );
 }
+
+

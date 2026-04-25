@@ -1,19 +1,21 @@
 ﻿import { useEffect, useMemo, type CSSProperties } from 'react';
-import { AdjacencyMatrix } from '../components/AdjacencyMatrix';
-import { ConfirmModal } from '../components/ConfirmModal';
-import { ControlPanel } from '../components/ControlPanel';
-import { GraphCanvas } from '../components/GraphCanvas';
-import { ResultPanel } from '../components/ResultPanel';
-import { useGraphEditor } from '../hooks/useGraphEditor';
-import { useMalgrange } from '../hooks/useMalgrange';
-import { useUndoRedo } from '../hooks/useUndoRedo';
+import '../../components/ControlPanel/ControlPanel.module.css';
+import { AdjacencyMatrix } from '../../components/AdjacencyMatrix/AdjacencyMatrix';
+import { ConfirmModal } from '../../components/ConfirmModal/ConfirmModal';
+import { ControlPanel } from '../../components/ControlPanel/ControlPanel';
+import { GraphCanvas } from '../../components/GraphCanvas/GraphCanvas';
+import { ResultPanel } from '../../components/ResultPanel/ResultPanel';
+import { useGraphEditor } from '../../hooks/useGraphEditor';
+import { useMalgrange } from '../../hooks/useMalgrange';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 import {
   MAX_VERTEX_COUNT,
   MIN_VERTEX_COUNT,
   createComponentColorMaps,
-} from '../model/graphState';
-import { getMatrixPositionByEdgeId } from '../utils/matrixMapping';
-import { MATRIX_CELL_GAP_PX, MATRIX_CELL_SIZE_PX } from '../utils/uiConstants';
+} from '../../model/graphState';
+import { getMatrixPositionByEdgeId } from '../../utils/matrixMapping';
+import { MATRIX_CELL_GAP_PX, MATRIX_CELL_SIZE_PX } from '../../utils/uiConstants';
+import './App.module.css';
 
 type AppCssVariables = CSSProperties & {
   '--matrix-cell-gap': string;
@@ -221,4 +223,8 @@ function App() {
 }
 
 export default App;
+
+
+
+
 

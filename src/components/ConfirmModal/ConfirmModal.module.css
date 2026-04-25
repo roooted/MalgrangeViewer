@@ -1,0 +1,44 @@
+﻿:global(.modal-backdrop) {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(3, 8, 15, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+:global(.modal) {
+  width: min(420px, 100%);
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 18px;
+}
+
+:global(.modal__title) {
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+:global(.modal__text) {
+  color: var(--text-secondary);
+}
+
+:global(.modal__actions) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  :global(.modal__actions) {
+    flex-direction: column-reverse;
+  }
+}
+

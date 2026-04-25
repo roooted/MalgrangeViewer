@@ -1,4 +1,5 @@
-﻿import type { KeyboardEvent } from 'react';
+﻿import './ControlPanel.module.css';
+import type { KeyboardEvent } from 'react';
 
 type ControlPanelProps = {
   vertexCountValue: string;
@@ -65,4 +66,6 @@ export function ControlPanel({
     </div>
   );
 }
+
+
 

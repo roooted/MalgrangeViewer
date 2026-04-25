@@ -8,14 +8,15 @@
   type ReactFlowInstance,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { Edge, EdgeId, FlowPoint, Vertex, VertexId } from '../model/types';
-import { createCircleLayout, GRAPH_NODE_RADIUS } from '../utils/circleLayout';
-import { COMPONENT_NODE_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../utils/colors';
-import { hasMutualPair } from '../utils/edgePairing';
-import { CurvedCenterEdge } from './CurvedCenterEdge';
-import { LoopEdge } from './LoopEdge';
-import { StraightCenterEdge } from './StraightCenterEdge';
-import type { CurvedEdgeRenderData, EdgeRenderData } from './edgeRenderTypes';
+import type { Edge, EdgeId, FlowPoint, Vertex, VertexId } from '../../model/types';
+import { createCircleLayout, GRAPH_NODE_RADIUS } from '../../utils/circleLayout';
+import { COMPONENT_NODE_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../../utils/colors';
+import { hasMutualPair } from '../../utils/edgePairing';
+import { CurvedCenterEdge } from '../CurvedCenterEdge';
+import { LoopEdge } from '../LoopEdge';
+import { StraightCenterEdge } from '../StraightCenterEdge';
+import type { CurvedEdgeRenderData, EdgeRenderData } from '../edgeRenderTypes';
+import './GraphCanvas.module.css';
 
 type GraphCanvasProps = {
   vertices: Vertex[];
@@ -362,6 +363,8 @@ export function GraphCanvas({
     </div>
   );
 }
+
+
 
 
 

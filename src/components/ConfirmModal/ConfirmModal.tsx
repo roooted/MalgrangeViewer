@@ -1,4 +1,6 @@
-﻿type ConfirmModalProps = {
+﻿import '../ControlPanel/ControlPanel.module.css';
+import './ConfirmModal.module.css';
+type ConfirmModalProps = {
   isOpen: boolean;
   title: string;
   description: string;
@@ -34,3 +36,5 @@ export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel }
     </div>
   );
 }
+
+

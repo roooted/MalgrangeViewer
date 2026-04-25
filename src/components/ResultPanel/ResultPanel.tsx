@@ -1,6 +1,7 @@
 ﻿import type { CSSProperties } from 'react';
-import type { ComponentResult } from '../model/types';
-import { COMPONENT_RESULT_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../utils/colors';
+import type { ComponentResult } from '../../model/types';
+import { COMPONENT_RESULT_STROKE_COLOR, getComponentFillOpacityByColor, hexToRgba } from '../../utils/colors';
+import './ResultPanel.module.css';
 
 type ResultPanelProps = {
   results: ComponentResult[];
@@ -53,3 +54,5 @@ export function ResultPanel({ results }: ResultPanelProps) {
     </div>
   );
 }
+
+
