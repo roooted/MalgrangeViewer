@@ -158,10 +158,10 @@ function App() {
               />
 
               <div className="graph-history-controls">
-                <button className="icon-button" type="button" onClick={undo} disabled={!canUndo}>
+                <button className="icon-button" data-testid="undo-button" type="button" onClick={undo} disabled={!canUndo}>
                   {'<'}
                 </button>
-                <button className="icon-button" type="button" onClick={redo} disabled={!canRedo}>
+                <button className="icon-button" data-testid="redo-button" type="button" onClick={redo} disabled={!canRedo}>
                   {'>'}
                 </button>
               </div>

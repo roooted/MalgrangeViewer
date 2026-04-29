@@ -1,10 +1,14 @@
 ﻿import {
   Background,
   BackgroundVariant,
+  Handle,
+  Position,
   ReactFlow,
   type Edge as FlowEdge,
   type EdgeTypes,
   type Node,
+  type NodeProps,
+  type NodeTypes,
   type ReactFlowInstance,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
@@ -36,10 +40,29 @@ type NodeStyleWithVariable = CSSProperties & {
   '--node-component-fill'?: string;
 };
 
+type GraphNodeData = {
+  label: string;
+  testId: string;
+};
+
+function GraphNode({ data }: NodeProps<Node<GraphNodeData>>) {
+  return (
+    <div data-testid={data.testId}>
+      <Handle position={Position.Top} style={{ opacity: 0 }} type="target" />
+      {data.label}
+      <Handle position={Position.Bottom} style={{ opacity: 0 }} type="source" />
+    </div>
+  );
+}
+
 const edgeTypes: EdgeTypes = {
   straightCenter: StraightCenterEdge,
   curvedCenter: CurvedCenterEdge,
   loop: LoopEdge,
+};
+
+const nodeTypes: NodeTypes = {
+  graphNode: GraphNode,
 };
 
 const FIT_VIEW_OPTIONS = { padding: 0.22 };
@@ -136,11 +159,11 @@ export function GraphCanvas({
 
         return {
           id,
-          type: 'default',
+          type: 'graphNode',
           className: getNodeClassName(id, pendingEdgeSourceId, Boolean(componentColor)),
           position,
           style: getNodeStyle(componentColor),
-          data: { label },
+          data: { label, testId: `graph-node-${id}` },
           draggable: false,
           selectable: false,
         };
@@ -310,12 +333,13 @@ export function GraphCanvas({
   );
 
   return (
-    <div className="graph-canvas">
+    <div className="graph-canvas" data-testid="graph-canvas">
       <ReactFlow
         nodeOrigin={[0.5, 0.5]}
         nodes={nodes}
         edges={flowEdges}
         edgeTypes={edgeTypes}
+        nodeTypes={nodeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}

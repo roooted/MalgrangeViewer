@@ -39,6 +39,7 @@ export function ControlPanel({
           <span className="control-panel__label">Vertices</span>
           <input
             className="control-panel__input"
+            data-testid="vertex-count-input"
             type="number"
             min={minVertexCount}
             max={maxVertexCount}
@@ -47,19 +48,19 @@ export function ControlPanel({
             onKeyDown={handleVertexCountKeyDown}
           />
         </label>
-        <button className="button" type="button" onClick={onApplyVertexCount}>
+        <button className="button" data-testid="apply-button" type="button" onClick={onApplyVertexCount}>
           Apply
         </button>
       </div>
 
       <div className="control-panel__group">
-        <button className="button" type="button" disabled={!canLoadExample} onClick={onLoadExample}>
+        <button className="button" data-testid="example-button" type="button" disabled={!canLoadExample} onClick={onLoadExample}>
           Example
         </button>
-        <button className="button" type="button" onClick={onClear}>
+        <button className="button" data-testid="clear-button" type="button" onClick={onClear}>
           Clear
         </button>
-        <button className="button button--primary" type="button" disabled={!canFindComponents} onClick={onFindComponents}>
+        <button className="button button--primary" data-testid="find-components-button" type="button" disabled={!canFindComponents} onClick={onFindComponents}>
           Find Components
         </button>
       </div>

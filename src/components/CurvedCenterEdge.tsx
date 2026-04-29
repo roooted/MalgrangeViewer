@@ -3,7 +3,7 @@ import { getCurvedEdgeGeometry } from '../utils/edgeGeometry';
 import type { CurvedEdgeRenderData } from './edgeRenderTypes';
 import { getEdgeVariantStyle } from './edgeStyles';
 
-export function CurvedCenterEdge({ data }: EdgeProps) {
+export function CurvedCenterEdge({ id, data }: EdgeProps) {
   const edgeData = data as CurvedEdgeRenderData | undefined;
 
   if (!edgeData) {
@@ -20,6 +20,7 @@ export function CurvedCenterEdge({ data }: EdgeProps) {
 
   return (
     <g
+      data-testid={`graph-edge-${id.replace('->', '-')}`}
       style={{
         pointerEvents: isInteractive ? style.pointerEvents : 'none',
         opacity: style.opacity,

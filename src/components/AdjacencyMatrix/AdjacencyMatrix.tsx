@@ -27,7 +27,7 @@ export function AdjacencyMatrix({
   onToggleCell,
 }: AdjacencyMatrixProps) {
   return (
-    <div className="matrix">
+    <div className="matrix" data-testid="adjacency-matrix">
       <div className="matrix__scroll">
         <table className="matrix__table">
           <thead>
@@ -73,6 +73,7 @@ export function AdjacencyMatrix({
                       <button
                         aria-label={`Toggle edge ${vertices[rowIndex]?.label} to ${vertices[columnIndex]?.label}`}
                         className={`matrix__cell${isDiagonal ? ' matrix__cell--diagonal' : ''}${isActive ? ' matrix__cell--active' : ''}${hasComponentColor ? ' matrix__cell--component' : ''}${isHovered ? ' matrix__cell--hovered' : ''}${isSelected ? ' matrix__cell--selected' : ''}`}
+                        data-testid={`matrix-cell-${vertices[rowIndex]?.id}-${vertices[columnIndex]?.id}`}
                         type="button"
                         style={cellStyle}
                         onClick={() => onToggleCell(rowIndex, columnIndex)}

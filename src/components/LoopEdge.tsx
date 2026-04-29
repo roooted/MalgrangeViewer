@@ -3,7 +3,7 @@ import { getLoopEdgeGeometry } from '../utils/edgeGeometry';
 import type { EdgeRenderData } from './edgeRenderTypes';
 import { getEdgeVariantStyle } from './edgeStyles';
 
-export function LoopEdge({ data }: EdgeProps) {
+export function LoopEdge({ id, data }: EdgeProps) {
   const edgeData = data as EdgeRenderData | undefined;
 
   if (!edgeData) {
@@ -16,6 +16,7 @@ export function LoopEdge({ data }: EdgeProps) {
 
   return (
     <g
+      data-testid={`graph-edge-${id.replace('->', '-')}`}
       style={{
         pointerEvents: isInteractive ? style.pointerEvents : 'none',
         opacity: style.opacity,

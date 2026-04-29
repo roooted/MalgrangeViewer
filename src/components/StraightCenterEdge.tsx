@@ -6,7 +6,7 @@ import {
 import type { EdgeRenderData } from './edgeRenderTypes';
 import { getEdgeVariantStyle } from './edgeStyles';
 
-export function StraightCenterEdge({ data }: EdgeProps) {
+export function StraightCenterEdge({ id, data }: EdgeProps) {
   const edgeData = data as EdgeRenderData | undefined;
 
   if (!edgeData) {
@@ -22,6 +22,7 @@ export function StraightCenterEdge({ data }: EdgeProps) {
 
   return (
     <g
+      data-testid={edgeData.variant === 'temporary' ? undefined : `graph-edge-${id.replace('->', '-')}`}
       style={{
         pointerEvents: isInteractive ? style.pointerEvents : 'none',
         opacity: style.opacity,

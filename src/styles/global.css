@@ -77,7 +77,8 @@ p {
   stroke: var(--grid);
 }
 
-.react-flow__node-default.graph-node {
+.react-flow__node-default.graph-node,
+.react-flow__node-graphNode.graph-node {
   width: 48px;
   height: 48px;
   padding: 0;
@@ -95,19 +96,23 @@ p {
 }
 
 .react-flow__node-default.graph-node.graph-node--hovered,
-.react-flow__node-default.graph-node:hover {
+.react-flow__node-default.graph-node:hover,
+.react-flow__node-graphNode.graph-node.graph-node--hovered,
+.react-flow__node-graphNode.graph-node:hover {
   border-color: rgba(176, 197, 255, 0.82);
   box-shadow:
     0 0 0 2px rgba(142, 162, 255, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.react-flow__node-default.graph-node.graph-node--component {
+.react-flow__node-default.graph-node.graph-node--component,
+.react-flow__node-graphNode.graph-node.graph-node--component {
   background: var(--node-component-fill);
   border-color: var(--node-component-color);
 }
 
-.react-flow__node-default.graph-node.graph-node--source {
+.react-flow__node-default.graph-node.graph-node--source,
+.react-flow__node-graphNode.graph-node.graph-node--source {
   border-color: rgba(186, 205, 255, 0.96);
   box-shadow:
     0 0 0 3px rgba(142, 162, 255, 0.24),

@@ -14,7 +14,7 @@ type ResultItemStyle = CSSProperties & {
 export function ResultPanel({ results }: ResultPanelProps) {
   if (results.length === 0) {
     return (
-      <div className="result-panel">
+      <div className="result-panel" data-testid="result-panel">
         <div className="result-panel__empty">
           No components calculated yet. Click Find Components to run the Malgrange algorithm.
         </div>
@@ -41,7 +41,7 @@ export function ResultPanel({ results }: ResultPanelProps) {
   };
 
   return (
-    <div className="result-panel">
+    <div className="result-panel" data-testid="result-panel">
       <div className="result-panel__columns">
         <ul className="result-panel__column">
           {leftColumn.map((result, index) => renderResultItem(result, index))}
