@@ -23,6 +23,8 @@ type EdgeVariantStyle = {
 export const getEdgeVariantStyle = (
   variant: EdgeVisualVariant,
   componentColor?: string,
+  isComponentHighlighted = false,
+  isComponentDimmed = false,
 ): EdgeVariantStyle => {
   if (variant === 'hovered') {
     return {
@@ -59,11 +61,22 @@ export const getEdgeVariantStyle = (
     };
   }
 
+  if (isComponentHighlighted) {
+    return {
+      color: componentColor ?? EDGE_BASE_COLOR,
+      strokeWidth: EDGE_STROKE_WIDTH + 0.55,
+      pointerEvents: 'auto',
+      opacity: 1,
+      hitboxWidth: EDGE_HITBOX_WIDTH,
+      isInteractive: true,
+    };
+  }
+
   return {
     color: componentColor ?? EDGE_BASE_COLOR,
     strokeWidth: EDGE_STROKE_WIDTH,
     pointerEvents: 'auto',
-    opacity: 1,
+    opacity: isComponentDimmed ? 0.24 : 1,
     hitboxWidth: EDGE_HITBOX_WIDTH,
     isInteractive: true,
   };

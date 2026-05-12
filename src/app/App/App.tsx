@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, type CSSProperties } from 'react';
+﻿import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import '../../components/ControlPanel/ControlPanel.module.css';
 import { AdjacencyMatrix } from '../../components/AdjacencyMatrix/AdjacencyMatrix';
 import { ConfirmModal } from '../../components/ConfirmModal/ConfirmModal';
@@ -24,6 +24,7 @@ type AppCssVariables = CSSProperties & {
 
 function App() {
   const editor = useGraphEditor();
+  const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null);
   const undoRedo = useUndoRedo(editor.graphState.history, editor.undo, editor.redo);
   const { canUndo, canRedo, undo, redo } = undoRedo;
   const malgrange = useMalgrange(editor.graphState, editor.applyMalgrangeResults);
@@ -55,6 +56,55 @@ function App() {
 
     return colorMap;
   }, [editor.graphState.componentResults, editor.graphState.vertices]);
+
+  const hoveredComponent = useMemo(
+    () =>
+      editor.graphState.componentResults.find((component) => component.id === hoveredComponentId) ??
+      null,
+    [editor.graphState.componentResults, hoveredComponentId],
+  );
+  const highlightedVertexIds = useMemo(
+    () => new Set(hoveredComponent?.vertexIds ?? []),
+    [hoveredComponent],
+  );
+  const highlightedEdgeIds = useMemo(
+    () => new Set(hoveredComponent?.edgeIds ?? []),
+    [hoveredComponent],
+  );
+  const highlightedMatrixCellKeys = useMemo(() => {
+    const cellKeys = new Set<string>();
+
+    if (!hoveredComponent) {
+      return cellKeys;
+    }
+
+    hoveredComponent.edgeIds.forEach((edgeId) => {
+      const matrixPosition = getMatrixPositionByEdgeId(edgeId, editor.graphState.vertices);
+
+      if (!matrixPosition) {
+        return;
+      }
+
+      cellKeys.add(`${matrixPosition.rowIndex}-${matrixPosition.columnIndex}`);
+    });
+
+    return cellKeys;
+  }, [editor.graphState.vertices, hoveredComponent]);
+  const isComponentHoverActive = hoveredComponent !== null;
+
+  useEffect(() => {
+    if (hoveredComponentId === null) {
+      return;
+    }
+
+    const hasHoveredComponent = editor.graphState.componentResults.some(
+      (component) => component.id === hoveredComponentId,
+    );
+
+    if (!hasHoveredComponent) {
+      setHoveredComponentId(null);
+    }
+  }, [editor.graphState.componentResults, hoveredComponentId]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -152,6 +202,9 @@ function App() {
                 selectedEdgeId={editor.graphState.selectedEdgeId}
                 vertexColorById={componentColorMaps.vertexColorById}
                 edgeColorById={componentColorMaps.edgeColorById}
+                isComponentHoverActive={isComponentHoverActive}
+                highlightedVertexIds={highlightedVertexIds}
+                highlightedEdgeIds={highlightedEdgeIds}
                 onNodeClick={editor.handleNodeClick}
                 onEdgeHover={editor.handleEdgeHover}
                 onEdgeSelect={editor.handleEdgeSelect}
@@ -185,6 +238,8 @@ function App() {
               hoveredCell={editor.hoveredMatrixCell}
               selectedCell={editor.selectedMatrixCell}
               componentCellColorByKey={componentCellColorByKey}
+              highlightedCellKeys={highlightedMatrixCellKeys}
+              isComponentHoverActive={isComponentHoverActive}
               onToggleCell={editor.toggleMatrixCell}
             />
           </section>
@@ -198,7 +253,11 @@ function App() {
               </p>
             </div>
 
-            <ResultPanel results={malgrange.results} />
+            <ResultPanel
+              results={malgrange.results}
+              hoveredComponentId={hoveredComponentId}
+              onComponentHover={setHoveredComponentId}
+            />
           </section>
         </section>
       </main>

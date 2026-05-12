@@ -10,6 +10,8 @@ type AdjacencyMatrixProps = {
   hoveredCell: MatrixCellPosition | null;
   selectedCell: MatrixCellPosition | null;
   componentCellColorByKey: Record<string, string>;
+  highlightedCellKeys: ReadonlySet<string>;
+  isComponentHoverActive: boolean;
   onToggleCell: (rowIndex: number, columnIndex: number) => void;
 };
 
@@ -24,6 +26,8 @@ export function AdjacencyMatrix({
   hoveredCell,
   selectedCell,
   componentCellColorByKey,
+  highlightedCellKeys,
+  isComponentHoverActive,
   onToggleCell,
 }: AdjacencyMatrixProps) {
   return (
@@ -55,8 +59,12 @@ export function AdjacencyMatrix({
                     hoveredCell?.rowIndex === rowIndex && hoveredCell?.columnIndex === columnIndex;
                   const isSelected =
                     selectedCell?.rowIndex === rowIndex && selectedCell?.columnIndex === columnIndex;
-                  const componentColor = componentCellColorByKey[`${rowIndex}-${columnIndex}`];
+                  const cellKey = `${rowIndex}-${columnIndex}`;
+                  const componentColor = componentCellColorByKey[cellKey];
                   const hasComponentColor = Boolean(componentColor && isActive);
+                  const isComponentHighlighted = hasComponentColor && highlightedCellKeys.has(cellKey);
+                  const isComponentDimmed =
+                    hasComponentColor && isComponentHoverActive && !isComponentHighlighted;
                   const cellStyle: MatrixCellStyleWithVariable | undefined = hasComponentColor
                     ? {
                         '--matrix-component-color': componentColor,
@@ -72,7 +80,7 @@ export function AdjacencyMatrix({
                     <td key={`${rowIndex}-${columnIndex}`}>
                       <button
                         aria-label={`Toggle edge ${vertices[rowIndex]?.label} to ${vertices[columnIndex]?.label}`}
-                        className={`matrix__cell${isDiagonal ? ' matrix__cell--diagonal' : ''}${isActive ? ' matrix__cell--active' : ''}${hasComponentColor ? ' matrix__cell--component' : ''}${isHovered ? ' matrix__cell--hovered' : ''}${isSelected ? ' matrix__cell--selected' : ''}`}
+                        className={`matrix__cell${isDiagonal ? ' matrix__cell--diagonal' : ''}${isActive ? ' matrix__cell--active' : ''}${hasComponentColor ? ' matrix__cell--component' : ''}${isComponentHighlighted ? ' matrix__cell--component-highlighted' : ''}${isComponentDimmed ? ' matrix__cell--component-dimmed' : ''}${isHovered ? ' matrix__cell--hovered' : ''}${isSelected ? ' matrix__cell--selected' : ''}`}
                         data-testid={`matrix-cell-${vertices[rowIndex]?.id}-${vertices[columnIndex]?.id}`}
                         type="button"
                         style={cellStyle}

@@ -10,6 +10,12 @@ async function clickGraphNode(page: Page, vertexId: string) {
   await node.click();
 }
 
+function getGraphNode(page: Page, vertexId: string) {
+  return page.locator('.react-flow__node').filter({
+    has: page.getByTestId(`graph-node-${vertexId}`),
+  });
+}
+
 test('renders the initial workspace', async ({ page }) => {
   await page.goto('/');
 
@@ -69,4 +75,34 @@ test('syncs graph edge creation back to the matrix', async ({ page }) => {
   await expect(page.getByTestId('graph-edge-x1-x3')).toBeVisible();
   await expect(page.getByTestId('matrix-cell-x1-x3')).toHaveText('1');
   await expect(page.getByTestId('matrix-cell-x3-x1')).toHaveText('0');
+});
+
+test('highlights graph and matrix elements while hovering a calculated component', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.goto('/');
+
+  await page.getByTestId('example-button').click();
+  await page.getByTestId('find-components-button').click();
+
+  const firstComponent = page.getByTestId('result-component-component-1');
+
+  await expect(firstComponent).toContainText('x1, x7, x11');
+  await firstComponent.hover();
+
+  await expect(firstComponent).toHaveClass(/result-panel__item--highlighted/);
+  await expect(page.getByTestId('result-component-component-2')).toHaveClass(/result-panel__item--dimmed/);
+  await expect(getGraphNode(page, 'x1')).toHaveClass(/graph-node--component-highlighted/);
+  await expect(getGraphNode(page, 'x2')).toHaveClass(/graph-node--component-dimmed/);
+  await expect(page.getByTestId('graph-edge-x1-x7')).toHaveClass(/graph-edge--component-highlighted/);
+  await expect(page.getByTestId('graph-edge-x2-x2')).toHaveClass(/graph-edge--component-dimmed/);
+  await expect(page.getByTestId('matrix-cell-x1-x7')).toHaveClass(/matrix__cell--component-highlighted/);
+  await expect(page.getByTestId('matrix-cell-x2-x2')).toHaveClass(/matrix__cell--component-dimmed/);
+
+  await page.getByTestId('matrix-cell-x1-x7').click();
+
+  await expect(page.getByTestId('result-panel')).toContainText(
+    'No components calculated yet. Click Find Components to run the Malgrange algorithm.',
+  );
+  await expect(page.getByTestId('result-component-component-1')).toHaveCount(0);
+  await expect(getGraphNode(page, 'x1')).not.toHaveClass(/graph-node--component-highlighted/);
 });

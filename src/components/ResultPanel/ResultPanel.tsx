@@ -5,13 +5,19 @@ import './ResultPanel.module.css';
 
 type ResultPanelProps = {
   results: ComponentResult[];
+  hoveredComponentId: string | null;
+  onComponentHover: (componentId: string | null) => void;
 };
 
 type ResultItemStyle = CSSProperties & {
   '--component-fill'?: string;
 };
 
-export function ResultPanel({ results }: ResultPanelProps) {
+type ResultListStyle = CSSProperties & {
+  '--result-column-min'?: string;
+};
+
+export function ResultPanel({ results, hoveredComponentId, onComponentHover }: ResultPanelProps) {
   if (results.length === 0) {
     return (
       <div className="result-panel" data-testid="result-panel">
@@ -22,18 +28,34 @@ export function ResultPanel({ results }: ResultPanelProps) {
     );
   }
 
-  const splitIndex = Math.ceil(results.length / 2);
-  const leftColumn = results.slice(0, splitIndex);
-  const rightColumn = results.slice(splitIndex);
+  const longestValuesLength = results.reduce((maxLength, result) => {
+    return Math.max(maxLength, result.vertexIds.join(', ').length);
+  }, 0);
+  const listStyle: ResultListStyle = {
+    '--result-column-min': `${Math.min(Math.max(longestValuesLength + 4, 10), 24)}ch`,
+  };
 
   const renderResultItem = (result: ComponentResult, index: number) => {
+    const isComponentHoverActive = hoveredComponentId !== null;
+    const isHovered = hoveredComponentId === result.id;
+    const itemClassName = `result-panel__item result-panel__item--component${isHovered ? ' result-panel__item--highlighted' : ''}${isComponentHoverActive && !isHovered ? ' result-panel__item--dimmed' : ''}`;
     const itemStyle: ResultItemStyle = {
       '--component-fill': hexToRgba(result.color, getComponentFillOpacityByColor(result.color)),
       borderColor: COMPONENT_RESULT_STROKE_COLOR,
     };
 
     return (
-      <li className="result-panel__item result-panel__item--component" key={result.id} style={itemStyle}>
+      <li
+        className={itemClassName}
+        data-testid={`result-component-${result.id}`}
+        key={result.id}
+        style={itemStyle}
+        tabIndex={0}
+        onBlur={() => onComponentHover(null)}
+        onFocus={() => onComponentHover(result.id)}
+        onMouseEnter={() => onComponentHover(result.id)}
+        onMouseLeave={() => onComponentHover(null)}
+      >
         <div className="result-panel__item-title">Component {index + 1}</div>
         <div className="result-panel__item-values">{result.vertexIds.join(', ')}</div>
       </li>
@@ -43,12 +65,8 @@ export function ResultPanel({ results }: ResultPanelProps) {
   return (
     <div className="result-panel" data-testid="result-panel">
       <div className="result-panel__columns">
-        <ul className="result-panel__column">
-          {leftColumn.map((result, index) => renderResultItem(result, index))}
-        </ul>
-
-        <ul className="result-panel__column">
-          {rightColumn.map((result, index) => renderResultItem(result, splitIndex + index))}
+        <ul className="result-panel__column" style={listStyle}>
+          {results.map((result, index) => renderResultItem(result, index))}
         </ul>
       </div>
     </div>

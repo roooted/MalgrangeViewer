@@ -30,6 +30,9 @@ type GraphCanvasProps = {
   selectedEdgeId: EdgeId | null;
   vertexColorById: Partial<Record<VertexId, string>>;
   edgeColorById: Partial<Record<EdgeId, string>>;
+  isComponentHoverActive: boolean;
+  highlightedVertexIds: ReadonlySet<VertexId>;
+  highlightedEdgeIds: ReadonlySet<EdgeId>;
   onNodeClick: (vertexId: VertexId) => void;
   onEdgeHover: (edgeId: EdgeId | null) => void;
   onEdgeSelect: (edgeId: EdgeId) => void;
@@ -73,11 +76,22 @@ const getNodeClassName = (
   vertexId: VertexId,
   pendingEdgeSourceId: VertexId | null,
   hasComponentColor: boolean,
+  isComponentHoverActive: boolean,
+  highlightedVertexIds: ReadonlySet<VertexId>,
 ): string => {
   const classes = ['graph-node'];
+  const isHighlighted = highlightedVertexIds.has(vertexId);
 
   if (hasComponentColor) {
     classes.push('graph-node--component');
+  }
+
+  if (isComponentHoverActive && isHighlighted) {
+    classes.push('graph-node--component-highlighted');
+  }
+
+  if (isComponentHoverActive && hasComponentColor && !isHighlighted) {
+    classes.push('graph-node--component-dimmed');
   }
 
   if (pendingEdgeSourceId === vertexId) {
@@ -107,6 +121,9 @@ export function GraphCanvas({
   selectedEdgeId,
   vertexColorById,
   edgeColorById,
+  isComponentHoverActive,
+  highlightedVertexIds,
+  highlightedEdgeIds,
   onNodeClick,
   onEdgeHover,
   onEdgeSelect,
@@ -160,7 +177,13 @@ export function GraphCanvas({
         return {
           id,
           type: 'graphNode',
-          className: getNodeClassName(id, pendingEdgeSourceId, Boolean(componentColor)),
+          className: getNodeClassName(
+            id,
+            pendingEdgeSourceId,
+            Boolean(componentColor),
+            isComponentHoverActive,
+            highlightedVertexIds,
+          ),
           position,
           style: getNodeStyle(componentColor),
           data: { label, testId: `graph-node-${id}` },
@@ -168,7 +191,7 @@ export function GraphCanvas({
           selectable: false,
         };
       }),
-    [layoutItems, pendingEdgeSourceId, vertexColorById],
+    [highlightedVertexIds, isComponentHoverActive, layoutItems, pendingEdgeSourceId, vertexColorById],
   );
 
   const flowEdges = useMemo(() => {
@@ -194,6 +217,9 @@ export function GraphCanvas({
       const variant: EdgeRenderData['variant'] =
         selectedEdgeId === edge.id ? 'selected' : hoveredEdgeId === edge.id ? 'hovered' : 'normal';
       const componentColor = edgeColorById[edge.id];
+      const isComponentHighlighted = variant === 'normal' && highlightedEdgeIds.has(edge.id);
+      const isComponentDimmed =
+        variant === 'normal' && isComponentHoverActive && Boolean(componentColor) && !isComponentHighlighted;
 
       if (edge.source === edge.target) {
         result.push({
@@ -206,6 +232,8 @@ export function GraphCanvas({
             targetCenter,
             variant,
             componentColor,
+            isComponentHighlighted,
+            isComponentDimmed,
             isInteractive: isEdgeInteractionEnabled,
           } satisfies EdgeRenderData,
           selectable: false,
@@ -228,6 +256,8 @@ export function GraphCanvas({
             targetCenter,
             variant,
             componentColor,
+            isComponentHighlighted,
+            isComponentDimmed,
             bendDirection: sourceIndex < targetIndex ? 1 : -1,
             isInteractive: isEdgeInteractionEnabled,
           } satisfies CurvedEdgeRenderData,
@@ -247,6 +277,8 @@ export function GraphCanvas({
           targetCenter,
           variant,
           componentColor,
+          isComponentHighlighted,
+          isComponentDimmed,
           isInteractive: isEdgeInteractionEnabled,
         } satisfies EdgeRenderData,
         selectable: false,
@@ -282,7 +314,9 @@ export function GraphCanvas({
   }, [
     edgeColorById,
     edges,
+    highlightedEdgeIds,
     hoveredEdgeId,
+    isComponentHoverActive,
     isEdgeInteractionEnabled,
     layoutItems,
     pendingEdgeSourceId,

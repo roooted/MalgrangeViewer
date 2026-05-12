@@ -10,12 +10,19 @@ export function LoopEdge({ id, data }: EdgeProps) {
     return null;
   }
 
-  const style = getEdgeVariantStyle(edgeData.variant, edgeData.componentColor);
+  const style = getEdgeVariantStyle(
+    edgeData.variant,
+    edgeData.componentColor,
+    edgeData.isComponentHighlighted,
+    edgeData.isComponentDimmed,
+  );
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
+  const edgeClassName = `graph-edge${edgeData.isComponentHighlighted ? ' graph-edge--component-highlighted' : ''}${edgeData.isComponentDimmed ? ' graph-edge--component-dimmed' : ''}`;
   const geometry = getLoopEdgeGeometry(edgeData.sourceCenter);
 
   return (
     <g
+      className={edgeClassName}
       data-testid={`graph-edge-${id.replace('->', '-')}`}
       style={{
         pointerEvents: isInteractive ? style.pointerEvents : 'none',

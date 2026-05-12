@@ -111,6 +111,22 @@ p {
   border-color: var(--node-component-color);
 }
 
+.react-flow__node-default.graph-node.graph-node--component-highlighted,
+.react-flow__node-graphNode.graph-node.graph-node--component-highlighted {
+  border-color: rgba(237, 243, 255, 0.94);
+  box-shadow:
+    0 0 0 3px rgba(237, 243, 255, 0.16),
+    0 0 18px var(--node-component-fill),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  filter: brightness(1.16) saturate(1.18);
+}
+
+.react-flow__node-default.graph-node.graph-node--component-dimmed,
+.react-flow__node-graphNode.graph-node.graph-node--component-dimmed {
+  opacity: 0.34;
+  filter: saturate(0.48);
+}
+
 .react-flow__node-default.graph-node.graph-node--source,
 .react-flow__node-graphNode.graph-node.graph-node--source {
   border-color: rgba(186, 205, 255, 0.96);
@@ -135,5 +151,17 @@ p {
 .react-flow__edge path {
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.graph-edge {
+  transition: opacity 140ms ease, filter 140ms ease;
+}
+
+.graph-edge--component-highlighted {
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+.graph-edge--component-dimmed {
+  filter: saturate(0.48);
 }
 

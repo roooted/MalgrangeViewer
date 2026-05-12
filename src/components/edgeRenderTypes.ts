@@ -7,6 +7,8 @@ export type EdgeRenderData = {
   targetCenter: EdgeRenderPosition;
   variant: EdgeVisualVariant;
   componentColor?: string;
+  isComponentHighlighted?: boolean;
+  isComponentDimmed?: boolean;
   isInteractive?: boolean;
 };
 

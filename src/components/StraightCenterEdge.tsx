@@ -13,8 +13,14 @@ export function StraightCenterEdge({ id, data }: EdgeProps) {
     return null;
   }
 
-  const style = getEdgeVariantStyle(edgeData.variant, edgeData.componentColor);
+  const style = getEdgeVariantStyle(
+    edgeData.variant,
+    edgeData.componentColor,
+    edgeData.isComponentHighlighted,
+    edgeData.isComponentDimmed,
+  );
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
+  const edgeClassName = `graph-edge${edgeData.isComponentHighlighted ? ' graph-edge--component-highlighted' : ''}${edgeData.isComponentDimmed ? ' graph-edge--component-dimmed' : ''}`;
   const geometry =
     edgeData.variant === 'temporary'
       ? getTemporaryStraightEdgeGeometry(edgeData.sourceCenter, edgeData.targetCenter)
@@ -22,6 +28,7 @@ export function StraightCenterEdge({ id, data }: EdgeProps) {
 
   return (
     <g
+      className={edgeClassName}
       data-testid={edgeData.variant === 'temporary' ? undefined : `graph-edge-${id.replace('->', '-')}`}
       style={{
         pointerEvents: isInteractive ? style.pointerEvents : 'none',
