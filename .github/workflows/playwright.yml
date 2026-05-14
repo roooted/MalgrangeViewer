@@ -14,8 +14,12 @@ jobs:
       with:
         node-version: 24
         cache: npm
+    - name: Show toolchain versions
+      run: |
+        node --version
+        npm --version
     - name: Install dependencies
-      run: npm ci
+      run: npm ci --legacy-peer-deps
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
