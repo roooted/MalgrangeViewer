@@ -27,6 +27,7 @@ export const MIN_VERTEX_COUNT = 2;
 export const MAX_VERTEX_COUNT = 20;
 export const DEFAULT_VERTEX_COUNT = 8;
 
+// История хранит только действия с дугами, как требует undo/redo в ТЗ.
 const createEmptyHistoryState = (): HistoryState => ({
   past: [],
   future: [],
@@ -39,6 +40,7 @@ export const createVertices = (vertexCount: number): Vertex[] =>
   Array.from({ length: vertexCount }, (_, index) => {
     const id = createVertexId(index);
 
+    // Метка совпадает с идентификатором, чтобы матрица и граф говорили одним языком.
     return {
       id,
       label: id,
@@ -71,12 +73,14 @@ const appendHistoryAction = (history: HistoryState, action: HistoryAction): Hist
   future: [],
 });
 
+// Проверка нужна перед созданием дуги кликом по вершине.
 const isVertexInGraph = (graphState: GraphState, vertexId: VertexId): boolean =>
   graphState.vertices.some((vertex) => vertex.id === vertexId);
 
 const buildStateWithEdges = (graphState: GraphState, nextEdges: Edge[]): GraphState => {
   const edgeIdSet = new Set(nextEdges.map((edge) => edge.id));
 
+  // Матрица каждый раз пересобирается из дуг, чтобы оба представления оставались синхронными.
   return {
     ...graphState,
     edges: nextEdges,
@@ -89,6 +93,7 @@ const buildStateWithEdges = (graphState: GraphState, nextEdges: Edge[]): GraphSt
       graphState.hoveredEdgeId && edgeIdSet.has(graphState.hoveredEdgeId)
         ? graphState.hoveredEdgeId
         : null,
+    // Любое изменение графа сбрасывает временное создание и старую раскраску SCC.
     pendingEdgeSourceId: null,
     componentResults: [],
   };
@@ -112,12 +117,14 @@ export const applyMatrixToggle = (
   rowIndex: number,
   columnIndex: number,
 ): GraphState => {
+  // Индексы ниже нуля могут прийти только из некорректного внешнего вызова.
   if (rowIndex < 0 || columnIndex < 0) {
     return graphState;
   }
 
   const currentEdge = findEdgeByIndexes(graphState.edges, graphState.vertices, rowIndex, columnIndex);
 
+  // Единица в матрице удаляет соответствующую направленную дугу.
   if (currentEdge) {
     const nextEdges = removeEdgeByIndexes(graphState.edges, graphState.vertices, rowIndex, columnIndex);
 
@@ -130,10 +137,12 @@ export const applyMatrixToggle = (
     });
   }
 
+  // За границами текущего набора вершин дугу создать нельзя.
   if (!graphState.vertices[rowIndex] || !graphState.vertices[columnIndex]) {
     return graphState;
   }
 
+  // Ноль в матрице создаёт направленную дугу xi -> xj, включая диагональную петлю.
   const nextEdge = createEdgeFromIndexes(graphState.vertices, rowIndex, columnIndex);
 
   return applyEdgeSetChange(graphState, [...graphState.edges, nextEdge], {
@@ -151,6 +160,7 @@ export const rebuildMatrixFromEdges = (graphState: GraphState): GraphState => ({
 });
 
 export const setHoveredEdge = (graphState: GraphState, hoveredEdgeId: EdgeId | null): GraphState => {
+  // Hover сбрасывается, если UI передал дугу, которой уже нет в состоянии.
   if (hoveredEdgeId !== null && !hasEdgeId(graphState.edges, hoveredEdgeId)) {
     if (graphState.hoveredEdgeId === null) {
       return graphState;
@@ -173,6 +183,7 @@ export const setHoveredEdge = (graphState: GraphState, hoveredEdgeId: EdgeId | n
 };
 
 export const selectEdge = (graphState: GraphState, edgeId: EdgeId | null): GraphState => {
+  // Выбор несуществующей дуги превращается в очистку выбора.
   if (edgeId !== null && !hasEdgeId(graphState.edges, edgeId)) {
     return {
       ...graphState,
@@ -191,6 +202,7 @@ export const selectEdge = (graphState: GraphState, edgeId: EdgeId | null): Graph
 };
 
 export const startEdgeCreation = (graphState: GraphState, sourceVertexId: VertexId): GraphState => {
+  // Источником временной дуги может быть только вершина текущего графа.
   if (!isVertexInGraph(graphState, sourceVertexId)) {
     return graphState;
   }
@@ -217,6 +229,7 @@ export const cancelEdgeCreation = (graphState: GraphState): GraphState => {
 export const finalizeEdgeCreation = (graphState: GraphState, targetVertexId: VertexId): GraphState => {
   const sourceVertexId = graphState.pendingEdgeSourceId;
 
+  // Без выбранного источника клик по вершине не завершает создание дуги.
   if (sourceVertexId === null) {
     return graphState;
   }
@@ -226,12 +239,14 @@ export const finalizeEdgeCreation = (graphState: GraphState, targetVertexId: Ver
     pendingEdgeSourceId: null,
   };
 
+  // Даже при некорректной цели временный режим должен завершиться.
   if (!isVertexInGraph(clearedCreationState, targetVertexId)) {
     return clearedCreationState;
   }
 
   const nextEdgeId = createEdgeId(sourceVertexId, targetVertexId);
 
+  // Точные дубликаты запрещены, но противоположная дуга считается другой.
   if (hasEdgeId(clearedCreationState.edges, nextEdgeId)) {
     return clearedCreationState;
   }
@@ -245,6 +260,7 @@ export const finalizeEdgeCreation = (graphState: GraphState, targetVertexId: Ver
 };
 
 export const deleteSelectedEdge = (graphState: GraphState): GraphState => {
+  // Delete работает только с одной явно выбранной дугой.
   if (!graphState.selectedEdgeId) {
     return graphState;
   }
@@ -271,6 +287,7 @@ export const deleteSelectedEdge = (graphState: GraphState): GraphState => {
 };
 
 const ensureEdgeFromAction = (graphState: GraphState, action: HistoryAction): Edge | null => {
+  // Для новых действий сохраняем саму дугу, для старых matrix-action можно восстановить её из индексов.
   if (action.edge) {
     return action.edge;
   }
@@ -291,6 +308,7 @@ const applyHistoryActionToEdges = (
   action: HistoryAction,
   direction: 'undo' | 'redo',
 ): Edge[] => {
+  // Undo добавления удаляет дугу, redo добавления возвращает её.
   if (action.type === 'add-edge') {
     if (!action.edge) {
       return graphState.edges;
@@ -303,6 +321,7 @@ const applyHistoryActionToEdges = (
     return hasEdgeId(graphState.edges, action.edge.id) ? graphState.edges : [...graphState.edges, action.edge];
   }
 
+  // Undo удаления возвращает дугу, redo удаления снова убирает её.
   if (action.type === 'remove-edge') {
     if (!action.edge) {
       return graphState.edges;
@@ -315,6 +334,7 @@ const applyHistoryActionToEdges = (
     return removeEdgeById(graphState.edges, action.edge.id);
   }
 
+  // Для матрицы действие хранит значение после клика, поэтому обратный ход инвертирует его.
   if (action.type === 'toggle-matrix') {
     if (action.rowIndex === undefined || action.columnIndex === undefined || action.nextValue === undefined) {
       return graphState.edges;
@@ -341,6 +361,7 @@ const applyHistoryActionToEdges = (
 export const undoGraphState = (graphState: GraphState): GraphState => {
   const { past, future } = graphState.history;
 
+  // Пустая история не меняет состояние.
   if (past.length === 0) {
     return graphState;
   }
@@ -361,6 +382,7 @@ export const undoGraphState = (graphState: GraphState): GraphState => {
 export const redoGraphState = (graphState: GraphState): GraphState => {
   const { past, future } = graphState.history;
 
+  // Redo доступен только после хотя бы одного undo.
   if (future.length === 0) {
     return graphState;
   }
@@ -391,6 +413,7 @@ type ComponentColorMaps = {
 };
 
 export const buildSimpleGraphFromState = (graphState: GraphState): SimpleGraph => {
+  // Алгоритм получает простые списки смежности без зависимостей от React Flow.
   const adjacencyList = Object.fromEntries(
     graphState.vertices.map((vertex) => [vertex.id, [] as VertexId[]]),
   ) as Record<VertexId, VertexId[]>;
@@ -399,6 +422,7 @@ export const buildSimpleGraphFromState = (graphState: GraphState): SimpleGraph =
   ) as Record<VertexId, VertexId[]>;
 
   graphState.edges.forEach((edge) => {
+    // Одновременно строим исходный и обратный граф для R+ и R-.
     adjacencyList[edge.source]?.push(edge.target);
     reverseAdjacencyList[edge.target]?.push(edge.source);
   });

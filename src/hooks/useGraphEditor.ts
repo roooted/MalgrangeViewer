@@ -54,6 +54,7 @@ type GraphEditorApi = {
 };
 
 export function useGraphEditor(): GraphEditorApi {
+  // Хук собирает весь graph state layer в один API для компонентов интерфейса.
   const [graphState, setGraphState] = useState<GraphState>(() => createEmptyGraphState());
   const [vertexCountControl, setVertexCountControl] = useState<VertexCountControlState>(() =>
     createInitialVertexCountControlState(),
@@ -83,6 +84,7 @@ export function useGraphEditor(): GraphEditorApi {
 
     const nextVertexCount = clampVertexCount(parsedValue);
 
+    // Если размер не изменился, подтверждение не нужно.
     if (nextVertexCount === graphState.vertexCount) {
       setVertexCountControl((currentState) => ({
         ...currentState,
@@ -103,6 +105,7 @@ export function useGraphEditor(): GraphEditorApi {
   };
 
   const confirmVertexCountReconstruction = () => {
+    // Подтверждать можно только заранее сохранённое значение из модального окна.
     if (vertexCountControl.pendingValue === null) {
       return;
     }
@@ -125,6 +128,7 @@ export function useGraphEditor(): GraphEditorApi {
   };
 
   const openClearConfirmation = () => {
+    // Открытие очистки закрывает возможное подтверждение пересоздания графа.
     setVertexCountControl((currentState) => ({
       ...currentState,
       pendingValue: null,
@@ -176,6 +180,7 @@ export function useGraphEditor(): GraphEditorApi {
 
   const handleNodeClick = (vertexId: VertexId) => {
     setGraphState((currentState) => {
+      // Первый клик выбирает источник, второй клик завершает направленную дугу.
       if (currentState.pendingEdgeSourceId === null) {
         return startEdgeCreation(currentState, vertexId);
       }
@@ -190,6 +195,7 @@ export function useGraphEditor(): GraphEditorApi {
 
   const handleEdgeSelect = (edgeId: EdgeId) => {
     setGraphState((currentState) => {
+      // Во время создания дуги существующие дуги не выбираются.
       if (currentState.pendingEdgeSourceId !== null) {
         return currentState;
       }
@@ -211,11 +217,13 @@ export function useGraphEditor(): GraphEditorApi {
   };
 
   const hoveredMatrixCell = useMemo(
+    // Hover дуги подсвечивает соответствующую ячейку матрицы.
     () => getMatrixPositionByEdgeId(graphState.hoveredEdgeId, graphState.vertices),
     [graphState.hoveredEdgeId, graphState.vertices],
   );
 
   const selectedMatrixCell = useMemo(
+    // Выбор дуги синхронизируется с выбранной ячейкой матрицы.
     () => getMatrixPositionByEdgeId(graphState.selectedEdgeId, graphState.vertices),
     [graphState.selectedEdgeId, graphState.vertices],
   );

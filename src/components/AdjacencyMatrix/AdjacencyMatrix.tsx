@@ -30,6 +30,7 @@ export function AdjacencyMatrix({
   isComponentHoverActive,
   onToggleCell,
 }: AdjacencyMatrixProps) {
+  // Матрица отображает текущее состояние графа и сразу отправляет клики в graph state layer.
   return (
     <div className="matrix" data-testid="adjacency-matrix">
       <div className="matrix__scroll">
@@ -53,6 +54,7 @@ export function AdjacencyMatrix({
                 </th>
 
                 {row.map((value, columnIndex) => {
+                  // Диагональ отвечает за петли xi -> xi.
                   const isDiagonal = rowIndex === columnIndex;
                   const isActive = value === 1;
                   const isHovered =
@@ -61,11 +63,13 @@ export function AdjacencyMatrix({
                     selectedCell?.rowIndex === rowIndex && selectedCell?.columnIndex === columnIndex;
                   const cellKey = `${rowIndex}-${columnIndex}`;
                   const componentColor = componentCellColorByKey[cellKey];
+                  // Цвет компоненты показываем только для существующих дуг.
                   const hasComponentColor = Boolean(componentColor && isActive);
                   const isComponentHighlighted = hasComponentColor && highlightedCellKeys.has(cellKey);
                   const isComponentDimmed =
                     hasComponentColor && isComponentHoverActive && !isComponentHighlighted;
                   const cellStyle: MatrixCellStyleWithVariable | undefined = hasComponentColor
+                    // CSS-переменные дают ячейке тот же цвет, что у дуги и результата.
                     ? {
                         '--matrix-component-color': componentColor,
                         '--matrix-component-fill': hexToRgba(

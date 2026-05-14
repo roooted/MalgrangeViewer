@@ -23,6 +23,7 @@ type AppCssVariables = CSSProperties & {
 };
 
 function App() {
+  // App связывает слой состояния, алгоритм Мальгранжа и визуальные панели.
   const editor = useGraphEditor();
   const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null);
   const undoRedo = useUndoRedo(editor.graphState.history, editor.undo, editor.redo);
@@ -35,6 +36,7 @@ function App() {
   const isAnyConfirmOpen = editor.vertexCountControl.isConfirmOpen || editor.isClearConfirmOpen;
 
   const componentColorMaps = useMemo(
+    // Цвета компонентов раскладываются в быстрые словари для графа.
     () => createComponentColorMaps(editor.graphState.componentResults),
     [editor.graphState.componentResults],
   );
@@ -42,6 +44,7 @@ function App() {
   const componentCellColorByKey = useMemo(() => {
     const colorMap: Record<string, string> = {};
 
+    // Каждую внутреннюю дугу компоненты переводим в ключ ячейки матрицы.
     editor.graphState.componentResults.forEach((component) => {
       component.edgeIds.forEach((edgeId) => {
         const matrixPosition = getMatrixPositionByEdgeId(edgeId, editor.graphState.vertices);
@@ -58,6 +61,7 @@ function App() {
   }, [editor.graphState.componentResults, editor.graphState.vertices]);
 
   const hoveredComponent = useMemo(
+    // Наведение на строку результата управляет общей подсветкой графа и матрицы.
     () =>
       editor.graphState.componentResults.find((component) => component.id === hoveredComponentId) ??
       null,
@@ -74,6 +78,7 @@ function App() {
   const highlightedMatrixCellKeys = useMemo(() => {
     const cellKeys = new Set<string>();
 
+    // Без активной компоненты матрица не получает дополнительную подсветку.
     if (!hoveredComponent) {
       return cellKeys;
     }
@@ -93,6 +98,7 @@ function App() {
   const isComponentHoverActive = hoveredComponent !== null;
 
   useEffect(() => {
+    // Если после пересчёта результата наведённая компонента исчезла, сбрасываем hover.
     if (hoveredComponentId === null) {
       return;
     }
@@ -108,30 +114,35 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Модальные подтверждения блокируют горячие клавиши редактора.
       if (isAnyConfirmOpen) {
         return;
       }
 
       const lowerKey = event.key.toLowerCase();
 
+      // Поддерживаем Ctrl+Z как для английской, так и для русской раскладки.
       if (event.ctrlKey && (lowerKey === 'z' || lowerKey === 'я') && canUndo) {
         event.preventDefault();
         undo();
         return;
       }
 
+      // Ctrl+Y также учитывает русскую раскладку клавиатуры.
       if (event.ctrlKey && (lowerKey === 'y' || lowerKey === 'н') && canRedo) {
         event.preventDefault();
         redo();
         return;
       }
 
+      // Escape отменяет только режим создания временной дуги.
       if (event.key === 'Escape' && editor.graphState.pendingEdgeSourceId !== null) {
         event.preventDefault();
         editor.cancelPendingEdgeCreation();
         return;
       }
 
+      // Delete удаляет выбранную дугу на графе и синхронно очищает матрицу.
       if (event.key === 'Delete' && editor.graphState.selectedEdgeId !== null) {
         event.preventDefault();
         editor.deleteSelectedGraphEdge();

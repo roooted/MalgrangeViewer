@@ -6,6 +6,7 @@ import { getEdgeVariantStyle } from './edgeStyles';
 export function CurvedCenterEdge({ id, data }: EdgeProps) {
   const edgeData = data as CurvedEdgeRenderData | undefined;
 
+  // Без данных о центрах вершин React Flow edge не имеет собственной геометрии.
   if (!edgeData) {
     return null;
   }
@@ -18,6 +19,7 @@ export function CurvedCenterEdge({ id, data }: EdgeProps) {
   );
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const edgeClassName = `graph-edge${edgeData.isComponentHighlighted ? ' graph-edge--component-highlighted' : ''}${edgeData.isComponentDimmed ? ' graph-edge--component-dimmed' : ''}`;
+  // Направление изгиба задаётся на уровне GraphCanvas для встречных дуг.
   const geometry = getCurvedEdgeGeometry(
     edgeData.sourceCenter,
     edgeData.targetCenter,
@@ -45,6 +47,7 @@ export function CurvedCenterEdge({ id, data }: EdgeProps) {
         }}
       />
       {isInteractive ? (
+        // Hitbox отделён от видимого пути, чтобы не утолщать саму дугу.
         <path
           d={geometry.curvePath}
           fill="none"

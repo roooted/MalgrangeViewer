@@ -13,11 +13,13 @@ export const COMPONENT_NODE_STROKE_COLOR = '#44516F';
 export const COMPONENT_MATRIX_STROKE_COLOR = '#5D74C8';
 export const COMPONENT_RESULT_STROKE_COLOR = '#2f3a55';
 
+// Значения каналов RGB удерживаем в допустимом диапазоне 0..255.
 const clampToByte = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
 
 const toHexByte = (value: number): string => clampToByte(value).toString(16).padStart(2, '0');
 
 const hslToHex = (hue: number, saturationPercent: number, lightnessPercent: number): string => {
+  // Дополнительные цвета строим через HSL, когда компонентов больше, чем базовых цветов.
   const saturation = saturationPercent / 100;
   const lightness = lightnessPercent / 100;
   const hueNormalized = ((hue % 360) + 360) % 360;
@@ -55,6 +57,7 @@ const hslToHex = (hue: number, saturationPercent: number, lightnessPercent: numb
 };
 
 export const getComponentColor = (componentIndex: number): string => {
+  // Первые цвета совпадают с визуальным смыслом макета.
   if (componentIndex < COMPONENT_COLORS.length) {
     return COMPONENT_COLORS[componentIndex];
   }
@@ -62,6 +65,7 @@ export const getComponentColor = (componentIndex: number): string => {
   const overflowIndex = componentIndex - COMPONENT_COLORS.length;
   const hue = (31 + overflowIndex * 47) % 360;
 
+  // При переполнении палитры генерируем контрастный, но предсказуемый цвет.
   return hslToHex(hue, 68, 62);
 };
 
@@ -74,6 +78,7 @@ export const getComponentFillOpacity = (componentIndex: number): number => {
 };
 
 export const getComponentFillOpacityByColor = (componentColor: string): number => {
+  // Непрозрачность восстанавливается по цвету, когда UI уже не знает индекс компоненты.
   const normalized = componentColor.toUpperCase();
   const index = COMPONENT_COLORS.findIndex((presetColor) => presetColor.toUpperCase() === normalized);
 
@@ -85,6 +90,7 @@ export const getComponentFillOpacityByColor = (componentColor: string): number =
 };
 
 export const hexToRgba = (hexColor: string, alpha: number): string => {
+  // CSS-переменные используют rgba, чтобы один цвет давал и обводку, и заливку.
   const normalized = hexColor.replace('#', '');
 
   if (normalized.length !== 6) {
@@ -110,4 +116,3 @@ export const EDGE_TEMPORARY_DASHARRAY = '7 5';
 
 export const EDGE_MUTUAL_MIN_CURVE_OFFSET = 26;
 export const EDGE_MUTUAL_MAX_CURVE_OFFSET = 46;
-

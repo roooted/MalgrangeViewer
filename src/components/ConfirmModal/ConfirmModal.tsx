@@ -9,6 +9,7 @@ type ConfirmModalProps = {
 };
 
 export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel }: ConfirmModalProps) {
+  // Закрытая модалка не остаётся в DOM и не перехватывает клавиатуру.
   if (!isOpen) {
     return null;
   }

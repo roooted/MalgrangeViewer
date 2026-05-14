@@ -15,13 +15,16 @@ export function useMalgrange(
   applyResults: (componentResults: ComponentResult[]) => void,
 ): MalgrangeApi {
   const run = useCallback(() => {
+    // Перед запуском алгоритма состояние UI переводится в простой граф.
     const simpleGraph = buildSimpleGraphFromState(graphState);
     const componentResults = runMalgrange(simpleGraph);
 
+    // Результат возвращается в graph state только как данные для подсветки.
     applyResults(componentResults);
   }, [applyResults, graphState]);
 
   const clear = useCallback(() => {
+    // Очистка результата не трогает вершины, дуги и матрицу.
     applyResults([]);
   }, [applyResults]);
 

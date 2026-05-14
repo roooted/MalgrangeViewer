@@ -20,6 +20,7 @@ export const GRAPH_NODE_RADIUS = GRAPH_NODE_DIAMETER / 2;
 // Равномерно раскладываем вершины по окружности, чтобы каркас сразу соответствовал ТЗ.
 export const createCircleLayout = (vertices: Vertex[]): CircleLayoutItem[] =>
   vertices.map((vertex, index) => {
+    // Первая вершина ставится сверху, остальные идут равномерно по кругу.
     const angle = -Math.PI / 2 + (index * 2 * Math.PI) / Math.max(vertices.length, 1);
 
     return {

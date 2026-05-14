@@ -6,6 +6,7 @@ import { getEdgeVariantStyle } from './edgeStyles';
 export function LoopEdge({ id, data }: EdgeProps) {
   const edgeData = data as EdgeRenderData | undefined;
 
+  // Петля рисуется только при наличии доменных данных дуги.
   if (!edgeData) {
     return null;
   }
@@ -18,6 +19,7 @@ export function LoopEdge({ id, data }: EdgeProps) {
   );
   const isInteractive = edgeData.isInteractive ?? style.isInteractive;
   const edgeClassName = `graph-edge${edgeData.isComponentHighlighted ? ' graph-edge--component-highlighted' : ''}${edgeData.isComponentDimmed ? ' graph-edge--component-dimmed' : ''}`;
+  // Для петли достаточно центра одной вершины, потому что source и target совпадают.
   const geometry = getLoopEdgeGeometry(edgeData.sourceCenter);
 
   return (
@@ -41,6 +43,7 @@ export function LoopEdge({ id, data }: EdgeProps) {
         }}
       />
       {isInteractive ? (
+        // Прозрачная область клика повторяет форму петли.
         <path
           d={geometry.loopPath}
           fill="none"

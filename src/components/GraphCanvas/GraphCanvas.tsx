@@ -49,6 +49,7 @@ type GraphNodeData = {
 };
 
 function GraphNode({ data }: NodeProps<Node<GraphNodeData>>) {
+  // Скрытые handles нужны React Flow, а рисуем вершину собственным HTML.
   return (
     <div data-testid={data.testId}>
       <Handle position={Position.Top} style={{ opacity: 0 }} type="target" />
@@ -79,6 +80,7 @@ const getNodeClassName = (
   isComponentHoverActive: boolean,
   highlightedVertexIds: ReadonlySet<VertexId>,
 ): string => {
+  // Классы отражают режим создания дуги и состояние подсветки компоненты.
   const classes = ['graph-node'];
   const isHighlighted = highlightedVertexIds.has(vertexId);
 
@@ -102,6 +104,7 @@ const getNodeClassName = (
 };
 
 const getNodeStyle = (componentColor?: string): NodeStyleWithVariable | undefined => {
+  // Цвет компоненты прокидывается через CSS-переменные для согласованной темы.
   if (!componentColor) {
     return undefined;
   }
@@ -128,6 +131,7 @@ export function GraphCanvas({
   onEdgeHover,
   onEdgeSelect,
 }: GraphCanvasProps) {
+  // React Flow отвечает только за координатное поле и события, доменная модель остаётся своей.
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance<Node, FlowEdge> | null>(null);
   const [temporaryTarget, setTemporaryTarget] = useState<FlowPoint | null>(null);
   const animationFrameIdRef = useRef<number | null>(null);
@@ -138,6 +142,7 @@ export function GraphCanvas({
   const isEdgeInteractionEnabled = pendingEdgeSourceId === null;
 
   useEffect(() => {
+    // fitView выполняется один раз на конкретную раскладку вершин.
     if (!flowInstance) {
       return;
     }
@@ -151,6 +156,7 @@ export function GraphCanvas({
   }, [flowInstance, layoutKey]);
 
   useEffect(() => {
+    // При смене режима создания сбрасываем временную цель и незавершённый animation frame.
     pendingTargetRef.current = null;
     setTemporaryTarget(null);
 
@@ -172,6 +178,7 @@ export function GraphCanvas({
   const nodes = useMemo<Node[]>(
     () =>
       layoutItems.map(({ id, label, position }) => {
+        // Узел получает цвет только после расчёта компоненты.
         const componentColor = vertexColorById[id];
 
         return {
@@ -195,6 +202,7 @@ export function GraphCanvas({
   );
 
   const flowEdges = useMemo(() => {
+    // Геометрия дуг строится из центров вершин, рассчитанных круговой раскладкой.
     const centersById = new Map(
       layoutItems.map((item) => [
         item.id,
@@ -217,11 +225,13 @@ export function GraphCanvas({
       const variant: EdgeRenderData['variant'] =
         selectedEdgeId === edge.id ? 'selected' : hoveredEdgeId === edge.id ? 'hovered' : 'normal';
       const componentColor = edgeColorById[edge.id];
+      // Подсветка компоненты не перебивает hover и selected состояния дуги.
       const isComponentHighlighted = variant === 'normal' && highlightedEdgeIds.has(edge.id);
       const isComponentDimmed =
         variant === 'normal' && isComponentHoverActive && Boolean(componentColor) && !isComponentHighlighted;
 
       if (edge.source === edge.target) {
+        // Петли рисуются отдельным типом ребра, чтобы стрелка обходила вершину.
         result.push({
           id: edge.id,
           source: edge.source,
@@ -243,6 +253,7 @@ export function GraphCanvas({
       }
 
       if (hasMutualPair(edge, edges)) {
+        // Встречные дуги разводятся по разные стороны от прямой между вершинами.
         const sourceIndex = Number.parseInt(edge.source.slice(1), 10);
         const targetIndex = Number.parseInt(edge.target.slice(1), 10);
 
@@ -287,6 +298,7 @@ export function GraphCanvas({
     });
 
     if (pendingEdgeSourceId !== null) {
+      // Временная дуга показывает направление до второго клика пользователя.
       const sourceCenter = centersById.get(pendingEdgeSourceId);
 
       if (sourceCenter) {
@@ -326,6 +338,7 @@ export function GraphCanvas({
 
   const toFlowPosition = useCallback(
     (event: { clientX: number; clientY: number }): FlowPoint | null => {
+      // Координаты курсора переводятся из экрана в систему координат React Flow.
       if (!flowInstance) {
         return null;
       }
@@ -339,12 +352,14 @@ export function GraphCanvas({
   );
 
   const commitPendingTarget = useCallback(() => {
+    // Частые pointermove объединяются в один React state update на кадр.
     animationFrameIdRef.current = null;
     setTemporaryTarget(pendingTargetRef.current);
   }, []);
 
   const handlePointerMove = useCallback(
     (event: { clientX: number; clientY: number }) => {
+      // Курсор нужен только во время интерактивного создания дуги.
       if (pendingEdgeSourceId === null) {
         return;
       }

@@ -12,9 +12,11 @@ const LOOP_OFFSET = GRAPH_NODE_RADIUS + 22;
 const LOOP_SIDE_SPREAD = GRAPH_NODE_RADIUS * 0.72;
 const LOOP_CONTROL_SPREAD = GRAPH_NODE_RADIUS * 1.18;
 
+// Округление делает SVG-пути короче и стабильнее в тестовых снимках.
 const toPrecision = (value: number): string => value.toFixed(3);
 
 const normalize = (x: number, y: number): Point => {
+  // Нулевая длина заменяется единицей, чтобы не получить NaN в геометрии.
   const length = Math.hypot(x, y) || 1;
 
   return {
@@ -52,6 +54,7 @@ type ArrowShape = {
 };
 
 const createArrowShape = (tip: Point, direction: Point): ArrowShape => {
+  // Стрелка строится как треугольник с основанием, перпендикулярным направлению дуги.
   const normal = perpendicular(direction);
   const baseCenter = add(tip, multiply(direction, -EDGE_ARROW_LENGTH));
   const left = add(baseCenter, multiply(normal, EDGE_ARROW_HALF_WIDTH));
@@ -74,6 +77,7 @@ export const getStraightEdgeGeometry = (
   sourceCenter: Point,
   targetCenter: Point,
 ): StraightEdgeGeometry => {
+  // Линия начинается и заканчивается у границ вершин, а не в их центрах.
   const direction = normalize(targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y);
   const start = add(sourceCenter, multiply(direction, GRAPH_NODE_RADIUS));
   const tip = add(targetCenter, multiply(direction, -(GRAPH_NODE_RADIUS + 1)));
@@ -89,6 +93,7 @@ export const getTemporaryStraightEdgeGeometry = (
   sourceCenter: Point,
   cursorPoint: Point,
 ): StraightEdgeGeometry => {
+  // Временная дуга следует за курсором, но сохраняет минимальную длину для стрелки.
   const direction = normalize(cursorPoint.x - sourceCenter.x, cursorPoint.y - sourceCenter.y);
   const start = add(sourceCenter, multiply(direction, GRAPH_NODE_RADIUS));
   const minimumTipDistance = EDGE_ARROW_LENGTH + 4;
@@ -115,6 +120,7 @@ export const getCurvedEdgeGeometry = (
   targetCenter: Point,
   bendDirection: 1 | -1,
 ): CurvedEdgeGeometry => {
+  // Встречные дуги разводятся квадратичной кривой в разные стороны.
   const direction = normalize(targetCenter.x - sourceCenter.x, targetCenter.y - sourceCenter.y);
   const normal = multiply(perpendicular(direction), bendDirection);
   const start = add(sourceCenter, multiply(direction, GRAPH_NODE_RADIUS));
@@ -137,6 +143,7 @@ export type LoopEdgeGeometry = {
 };
 
 export const getLoopEdgeGeometry = (nodeCenter: Point): LoopEdgeGeometry => {
+  // Петля выводится наружу от центра графа, чтобы не перекрывать вершину.
   const outward = normalize(nodeCenter.x - GRAPH_CENTER_X, nodeCenter.y - GRAPH_CENTER_Y);
   const tangent = perpendicular(outward);
 

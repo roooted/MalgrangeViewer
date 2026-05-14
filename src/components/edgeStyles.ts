@@ -26,6 +26,7 @@ export const getEdgeVariantStyle = (
   isComponentHighlighted = false,
   isComponentDimmed = false,
 ): EdgeVariantStyle => {
+  // Hover имеет приоритет над компонентной окраской.
   if (variant === 'hovered') {
     return {
       color: EDGE_HOVER_COLOR,
@@ -37,6 +38,7 @@ export const getEdgeVariantStyle = (
     };
   }
 
+  // Выбранная дуга становится пунктирной по требованиям макета.
   if (variant === 'selected') {
     return {
       color: EDGE_SELECTED_COLOR,
@@ -49,6 +51,7 @@ export const getEdgeVariantStyle = (
     };
   }
 
+  // Временная дуга не должна перехватывать события мыши.
   if (variant === 'temporary') {
     return {
       color: EDGE_TEMPORARY_COLOR,
@@ -61,6 +64,7 @@ export const getEdgeVariantStyle = (
     };
   }
 
+  // Подсветка результата усиливает только дуги наведённой компоненты.
   if (isComponentHighlighted) {
     return {
       color: componentColor ?? EDGE_BASE_COLOR,
@@ -72,6 +76,7 @@ export const getEdgeVariantStyle = (
     };
   }
 
+  // Обычная дуга может быть приглушена при наведении на другую компоненту.
   return {
     color: componentColor ?? EDGE_BASE_COLOR,
     strokeWidth: EDGE_STROKE_WIDTH,

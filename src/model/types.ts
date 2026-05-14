@@ -61,6 +61,7 @@ export interface VertexCountControlState {
 }
 
 export interface SimpleGraph {
+  // Упрощённый граф нужен алгоритмам и не содержит объектов React Flow.
   vertices: VertexId[];
   adjacencyList: Record<VertexId, VertexId[]>;
   reverseAdjacencyList: Record<VertexId, VertexId[]>;

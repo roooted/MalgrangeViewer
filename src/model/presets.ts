@@ -30,11 +30,13 @@ const EXAMPLE_EDGE_INDEXES: Array<[number, number]> = [
 export const EXAMPLE_PRESET_AVAILABLE = true;
 
 export const getExamplePreset = (): GraphState => {
+  // Пример строится теми же функциями, что и ручное редактирование графа.
   const baseState = createEmptyGraphState(EXAMPLE_VERTEX_COUNT);
   const edges = EXAMPLE_EDGE_INDEXES.map(([rowIndex, columnIndex]) =>
     createEdgeFromIndexes(baseState.vertices, rowIndex, columnIndex),
   );
 
+  // Матрица сразу синхронизируется со списком предустановленных дуг.
   return {
     ...baseState,
     edges,

@@ -27,12 +27,14 @@ export function ControlPanel({
   onFindComponents,
 }: ControlPanelProps) {
   const handleVertexCountKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    // Enter применяет новое количество вершин так же, как кнопка Apply.
     if (event.key === 'Enter') {
       onApplyVertexCount();
     }
   };
 
   return (
+    // Панель оставляет всю бизнес-логику внешнему хуку редактора.
     <div className="control-panel">
       <div className="control-panel__group">
         <label className="control-panel__field">

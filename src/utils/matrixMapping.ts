@@ -5,8 +5,10 @@ export type MatrixCellPosition = {
   columnIndex: number;
 };
 
+// Индексы матрицы переводим в человекочитаемые вершины x1, x2, ...
 export const createVertexId = (index: number): VertexId => `x${index + 1}` as VertexId;
 
+// Идентификатор дуги сохраняет направление, поэтому x1->x2 и x2->x1 различаются.
 export const createEdgeId = (source: VertexId, target: VertexId): EdgeId =>
   `${source}->${target}` as EdgeId;
 
@@ -20,12 +22,14 @@ export const createZeroMatrix = (vertexCount: number): AdjacencyMatrix =>
   Array.from({ length: vertexCount }, () => Array.from({ length: vertexCount }, () => 0));
 
 export const createMatrixFromEdges = (vertexCount: number, edges: Edge[]): AdjacencyMatrix => {
+  // Матрица всегда строится заново из списка дуг, чтобы не накапливать рассинхрон.
   const matrix = createZeroMatrix(vertexCount);
 
   edges.forEach((edge) => {
     const rowIndex = Number.parseInt(edge.source.slice(1), 10) - 1;
     const columnIndex = Number.parseInt(edge.target.slice(1), 10) - 1;
 
+    // Проверка защищает от дуг, не относящихся к текущему размеру графа.
     if (matrix[rowIndex]?.[columnIndex] !== undefined) {
       matrix[rowIndex][columnIndex] = 1;
     }
@@ -39,6 +43,7 @@ export const toggleMatrixValue = (
   rowIndex: number,
   columnIndex: number,
 ): AdjacencyMatrix =>
+  // Возвращаем новую матрицу без мутации старого состояния React.
   matrix.map((row, currentRowIndex) =>
     row.map((value, currentColumnIndex) => {
       if (currentRowIndex === rowIndex && currentColumnIndex === columnIndex) {
@@ -54,6 +59,7 @@ export const createEdgeFromIndexes = (
   rowIndex: number,
   columnIndex: number,
 ): Edge => {
+  // Строка матрицы задаёт источник, столбец задаёт цель направленной дуги.
   const source = vertices[rowIndex].id;
   const target = vertices[columnIndex].id;
 
@@ -72,6 +78,7 @@ export const findEdgeByIndexes = (
   rowIndex: number,
   columnIndex: number,
 ): Edge | null => {
+  // Некорректная ячейка не должна создавать фиктивные id.
   const source = vertices[rowIndex]?.id;
   const target = vertices[columnIndex]?.id;
 
@@ -93,6 +100,7 @@ export const removeEdgeByIndexes = (
   rowIndex: number,
   columnIndex: number,
 ): Edge[] => {
+  // Удаление через матрицу использует тот же id, что и удаление на графе.
   const source = vertices[rowIndex]?.id;
   const target = vertices[columnIndex]?.id;
 
@@ -109,6 +117,7 @@ export const getMatrixPositionByEdgeId = (
   edgeId: EdgeId | null,
   vertices: Vertex[],
 ): MatrixCellPosition | null => {
+  // null означает отсутствие выбранной или наведённой дуги.
   if (!edgeId) {
     return null;
   }
@@ -117,6 +126,7 @@ export const getMatrixPositionByEdgeId = (
   const rowIndex = vertices.findIndex((vertex) => vertex.id === sourceId);
   const columnIndex = vertices.findIndex((vertex) => vertex.id === targetId);
 
+  // Если вершины уже пересозданы, старая дуга не имеет позиции в текущей матрице.
   if (rowIndex < 0 || columnIndex < 0) {
     return null;
   }

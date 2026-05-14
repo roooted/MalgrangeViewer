@@ -18,6 +18,7 @@ type ResultListStyle = CSSProperties & {
 };
 
 export function ResultPanel({ results, hoveredComponentId, onComponentHover }: ResultPanelProps) {
+  // Пустое состояние показывается до первого ручного запуска алгоритма.
   if (results.length === 0) {
     return (
       <div className="result-panel" data-testid="result-panel">
@@ -28,6 +29,7 @@ export function ResultPanel({ results, hoveredComponentId, onComponentHover }: R
     );
   }
 
+  // Ширина колонки подстраивается под самый длинный список вершин.
   const longestValuesLength = results.reduce((maxLength, result) => {
     return Math.max(maxLength, result.vertexIds.join(', ').length);
   }, 0);
@@ -36,6 +38,7 @@ export function ResultPanel({ results, hoveredComponentId, onComponentHover }: R
   };
 
   const renderResultItem = (result: ComponentResult, index: number) => {
+    // Наведённая компонента остаётся яркой, остальные временно приглушаются.
     const isComponentHoverActive = hoveredComponentId !== null;
     const isHovered = hoveredComponentId === result.id;
     const itemClassName = `result-panel__item result-panel__item--component${isHovered ? ' result-panel__item--highlighted' : ''}${isComponentHoverActive && !isHovered ? ' result-panel__item--dimmed' : ''}`;
